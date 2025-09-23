@@ -28,7 +28,7 @@ export interface LeadRoger {
   status_imovel: string | null;
   valor_estimado_recuperacao: number | null;
   proposta_recomendada: string | null;
-  ia_bloqueada?: boolean | null;
+  atendente?: string | null;
 }
 
 export const useLeadsRoger = () => {
@@ -41,12 +41,18 @@ export const useLeadsRoger = () => {
     queryFn: async () => {
       const { data: leadsData, error: leadsError } = await supabase
         .from('leads_roger')
-        .select('*')
+        .select(`
+          *,
+          fluxo:\"[FLUXO] • IA\"!left(ATENDENTE)
+        `)
         .order('created_at', { ascending: false });
       
       if (leadsError) throw leadsError;
       
-      return (leadsData || []) as LeadRoger[];
+      return (leadsData || []).map((lead: any) => ({
+        ...lead,
+        atendente: lead.fluxo?.[0]?.ATENDENTE || null
+      })) as LeadRoger[];
     },
   });
 
@@ -60,6 +66,17 @@ export const useLeadsRoger = () => {
           event: '*',
           schema: 'public',
           table: 'leads_roger',
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['leads-roger'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: '[FLUXO] • IA',
         },
         () => {
           queryClient.invalidateQueries({ queryKey: ['leads-roger'] });

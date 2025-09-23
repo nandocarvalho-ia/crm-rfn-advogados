@@ -524,15 +524,15 @@ const CRMDashboardReal: React.FC = () => {
                               variant="outline" 
                               onClick={e => {
                                 e.stopPropagation();
-                                toggleIA(lead.telefone, lead.nome_lead, lead.ia_bloqueada || false);
+                                toggleIA(lead.telefone, lead.nome_lead, lead.atendente === 'HUMANO');
                               }}
                               disabled={isTogglingIA(lead.telefone)}
                               className="w-10 h-10 p-0"
-                              title={lead.ia_bloqueada ? "IA Pausada - Clique para Ativar" : "IA Ativa - Clique para Pausar"}
+                              title={lead.atendente === 'HUMANO' ? "IA Pausada - Clique para Ativar" : "IA Ativa - Clique para Pausar"}
                             >
                               {isTogglingIA(lead.telefone) ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : lead.ia_bloqueada ? (
+                              ) : lead.atendente === 'HUMANO' ? (
                                 <Play className="h-4 w-4" />
                               ) : (
                                 <Pause className="h-4 w-4" />
