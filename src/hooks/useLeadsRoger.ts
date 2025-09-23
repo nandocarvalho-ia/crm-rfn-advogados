@@ -30,17 +30,31 @@ export const useLeadsRoger = () => {
   const { data: leads = [], isLoading, error } = useQuery({
     queryKey: ['leads-roger'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Buscar leads
+      const { data: leadsData, error: leadsError } = await supabase
         .from('leads_roger')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (leadsError) throw leadsError;
       
-      // Por enquanto, simular status IA (será implementado com JOIN real depois)
-      return (data || []).map(lead => ({
+      // Buscar status de IA bloqueada usando edge function
+      let iaStatusMap = new Map();
+      try {
+        const { data: iaResponse } = await supabase.functions.invoke('get-ia-status');
+        if (iaResponse?.success && iaResponse?.statusMap) {
+          Object.entries(iaResponse.statusMap).forEach(([telefone, status]) => {
+            iaStatusMap.set(telefone, status);
+          });
+        }
+      } catch (error) {
+        console.warn('Erro ao buscar dados de IA bloqueada:', error);
+      }
+      
+      // Mapear os dados com o status real da IA
+      return (leadsData || []).map(lead => ({
         ...lead,
-        ia_bloqueada: false // TODO: implementar JOIN com tabela ia_bloqueada
+        ia_bloqueada: iaStatusMap.get(lead.telefone) || false
       })) as LeadRoger[];
     },
   });

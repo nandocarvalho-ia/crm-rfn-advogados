@@ -10,16 +10,14 @@ export const useIABlockControl = () => {
 
   const toggleIAMutation = useMutation({
     mutationFn: async ({ telefone, nome, block }: { telefone: string; nome: string | null; block: boolean }) => {
-      // Por ora, simular a operação até criarmos as edge functions necessárias
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const { data, error } = await supabase.functions.invoke('toggle-ia-block', {
+        body: { telefone, nome, block }
+      });
       
-      if (block) {
-        console.log(`Bloqueando IA para ${telefone} (${nome})`);
-        // TODO: Implementar inserção real na tabela ia_bloqueada
-      } else {
-        console.log(`Desbloqueando IA para ${telefone} (${nome})`);
-        // TODO: Implementar atualização real na tabela ia_bloqueada
-      }
+      if (error) throw error;
+      if (!data?.success) throw new Error('Falha ao alterar status da IA');
+      
+      return data;
     },
     onSuccess: (_, variables) => {
       toast({
