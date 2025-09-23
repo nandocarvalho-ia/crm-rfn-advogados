@@ -99,7 +99,7 @@ const CRMDashboardReal: React.FC = () => {
     setShowLeadModal(true);
   };
   if (error) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">
+    return <div className="min-h-screen bg-crm-primary flex items-center justify-center">
         <Card className="p-6">
           <CardContent>
             <p className="text-destructive">Erro ao carregar dados: {error.message}</p>
@@ -107,7 +107,7 @@ const CRMDashboardReal: React.FC = () => {
         </Card>
       </div>;
   }
-  return <div className="min-h-screen bg-background font-inter">
+  return <div className="min-h-screen bg-crm-primary font-inter">
       {/* Header */}
       <header className="bg-card border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
