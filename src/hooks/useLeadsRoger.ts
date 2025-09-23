@@ -19,6 +19,7 @@ export interface LeadRoger {
   status_qualificacao: string | null;
   prioridade_atendimento: number | null;
   observacoes: string | null;
+  ia_bloqueada?: boolean | null;
 }
 
 export const useLeadsRoger = () => {
@@ -35,7 +36,12 @@ export const useLeadsRoger = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as LeadRoger[];
+      
+      // Por enquanto, simular status IA (será implementado com JOIN real depois)
+      return (data || []).map(lead => ({
+        ...lead,
+        ia_bloqueada: false // TODO: implementar JOIN com tabela ia_bloqueada
+      })) as LeadRoger[];
     },
   });
 

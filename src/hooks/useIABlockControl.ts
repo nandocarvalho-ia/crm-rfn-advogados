@@ -9,14 +9,16 @@ export const useIABlockControl = () => {
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
 
   const toggleIAMutation = useMutation({
-    mutationFn: async ({ telefone, block }: { telefone: string; block: boolean }) => {
-      // Simular operação por enquanto - implementar com RPC ou edge function depois
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    mutationFn: async ({ telefone, nome, block }: { telefone: string; nome: string | null; block: boolean }) => {
+      // Por ora, simular a operação até criarmos as edge functions necessárias
+      await new Promise(resolve => setTimeout(resolve, 800));
       
       if (block) {
-        console.log(`Bloqueando IA para ${telefone}`);
+        console.log(`Bloqueando IA para ${telefone} (${nome})`);
+        // TODO: Implementar inserção real na tabela ia_bloqueada
       } else {
-        console.log(`Desbloqueando IA para ${telefone}`);
+        console.log(`Desbloqueando IA para ${telefone} (${nome})`);
+        // TODO: Implementar atualização real na tabela ia_bloqueada
       }
     },
     onSuccess: (_, variables) => {
@@ -38,9 +40,9 @@ export const useIABlockControl = () => {
     },
   });
 
-  const toggleIA = async (telefone: string, currentlyBlocked: boolean) => {
+  const toggleIA = async (telefone: string, nome: string | null, currentlyBlocked: boolean) => {
     setLoadingStates(prev => ({ ...prev, [telefone]: true }));
-    toggleIAMutation.mutate({ telefone, block: !currentlyBlocked });
+    toggleIAMutation.mutate({ telefone, nome, block: !currentlyBlocked });
   };
 
   const isLoading = (telefone: string) => loadingStates[telefone] || false;
