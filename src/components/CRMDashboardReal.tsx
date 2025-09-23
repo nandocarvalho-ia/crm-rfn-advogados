@@ -12,43 +12,43 @@ import { Skeleton } from '@/components/ui/skeleton';
 const getCategoryStyle = (category: string | null) => {
   switch (category) {
     case 'PREMIUM_ATRASO':
-      return 'bg-purple-600 text-white border border-purple-400';
+      return 'bg-crm-primary text-white';
     case 'A_EXCELENTE':
-      return 'bg-green-600 text-white border border-green-400';
+      return 'bg-crm-primary/90 text-white';
     case 'B_MUITO_BOM':
-      return 'bg-blue-500 text-white border border-blue-300';
+      return 'bg-crm-primary/80 text-white';
     case 'C_BOM':
-      return 'bg-yellow-500 text-black border border-yellow-300';
+      return 'bg-crm-primary/60 text-white';
     case 'D_REGULAR':
-      return 'bg-orange-600 text-white border border-orange-400';
+      return 'bg-crm-primary/40 text-crm-primary';
     case 'E_BAIXO':
-      return 'bg-red-600 text-white border border-red-400';
+      return 'bg-crm-secondary text-crm-primary';
     default:
-      return 'bg-slate-600 text-slate-100 border border-slate-400';
+      return 'bg-crm-secondary/80 text-crm-primary';
   }
 };
 const getPotentialStyle = (potential: string | null) => {
   switch (potential?.toLowerCase()) {
     case 'alto':
-      return 'bg-emerald-600 text-white border border-emerald-400';
+      return 'bg-crm-primary text-white';
     case 'medio':
-      return 'bg-amber-500 text-black border border-amber-300';
+      return 'bg-crm-primary/70 text-white';
     case 'baixo':
-      return 'bg-rose-600 text-white border border-rose-400';
+      return 'bg-crm-secondary text-crm-primary';
     default:
-      return 'bg-slate-600 text-slate-100 border border-slate-400';
+      return 'bg-crm-secondary/80 text-crm-primary';
   }
 };
 const getStatusStyle = (status: string | null) => {
   switch (status?.toUpperCase()) {
     case 'NOVO':
-      return 'bg-sky-600 text-white border border-sky-400';
+      return 'bg-crm-primary text-white';
     case 'CONVERSANDO':
-      return 'bg-indigo-600 text-white border border-indigo-400';
+      return 'bg-crm-primary/80 text-white';
     case 'CONVERTIDO':
-      return 'bg-teal-600 text-white border border-teal-400';
+      return 'bg-crm-primary/60 text-white';
     default:
-      return 'bg-slate-600 text-slate-100 border border-slate-400';
+      return 'bg-crm-secondary/80 text-crm-primary';
   }
 };
 const formatCurrency = (value: number | null) => {
