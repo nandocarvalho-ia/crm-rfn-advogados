@@ -354,7 +354,7 @@ const CRMDashboardReal: React.FC = () => {
 
       {/* Lead Details Modal */}
       <Dialog open={showLeadModal} onOpenChange={setShowLeadModal}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-slate-900 border-slate-700">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-slate-100">
               Detalhes do Lead
