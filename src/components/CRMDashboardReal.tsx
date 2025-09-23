@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2 } from 'lucide-react';
 import { useLeadsRoger, LeadRoger } from '@/hooks/useLeadsRoger';
@@ -353,64 +354,188 @@ const CRMDashboardReal: React.FC = () => {
 
       {/* Lead Details Modal */}
       <Dialog open={showLeadModal} onOpenChange={setShowLeadModal}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Detalhes do Lead</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-slate-100">
+              Detalhes do Lead
+            </DialogTitle>
           </DialogHeader>
-          {selectedLead && <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-semibold">Nome:</h4>
-                  <p>{selectedLead.nome_lead || 'Não informado'}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold">Telefone:</h4>
-                  <p>{selectedLead.telefone}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold">Email:</h4>
-                  <p>{selectedLead.email || 'Não informado'}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold">Estado:</h4>
-                  <p>{selectedLead.estado || 'Não informado'}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold">Categoria:</h4>
-                  <Badge className={getCategoryStyle(selectedLead.categoria_lead)}>
-                    {selectedLead.categoria_lead || 'Não classificado'}
-                  </Badge>
-                </div>
-                <div>
-                  <h4 className="font-semibold">Status:</h4>
-                  <Badge className={getStatusStyle(selectedLead.status_lead)}>
-                    {selectedLead.status_lead || 'Sem status'}
-                  </Badge>
-                </div>
-                <div>
-                  <h4 className="font-semibold">Score Total:</h4>
-                  <p>{selectedLead.score_total || 0}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold">Prioridade:</h4>
-                  <p>{selectedLead.prioridade_atendimento || 0}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold">Potencial:</h4>
-                  <Badge className={getPotentialStyle(selectedLead.potencial_recuperacao)}>
-                    {selectedLead.potencial_recuperacao || 'Não avaliado'}
-                  </Badge>
-                </div>
-                <div>
-                  <h4 className="font-semibold">Valor Pago:</h4>
-                  <p>{formatCurrency(selectedLead.valor_pago)}</p>
+          {selectedLead && (
+            <div className="space-y-6 py-4">
+              {/* Informações Básicas */}
+              <div>
+                <h3 className="text-lg font-semibold text-slate-200 mb-3 border-b border-slate-600 pb-2">
+                  Informações Básicas
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-slate-300">Nome</Label>
+                    <p className="text-slate-100 font-medium">{selectedLead.nome_lead || 'Não informado'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-300">Telefone</Label>
+                    <p className="text-slate-100 font-medium">{selectedLead.telefone}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-300">Email</Label>
+                    <p className="text-slate-100 font-medium">{selectedLead.email || 'Não informado'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-300">Estado</Label>
+                    <p className="text-slate-100 font-medium">{selectedLead.estado || 'Não informado'}</p>
+                  </div>
+                  {selectedLead.data_compra && (
+                    <div>
+                      <Label className="text-sm font-medium text-slate-300">Data da Compra</Label>
+                      <p className="text-slate-100 font-medium">{formatDate(selectedLead.data_compra)}</p>
+                    </div>
+                  )}
                 </div>
               </div>
-              {selectedLead.observacoes && <div>
-                  <h4 className="font-semibold">Observações:</h4>
-                  <p className="mt-2 p-3 bg-muted rounded-md">{selectedLead.observacoes}</p>
-                </div>}
-            </div>}
+
+              {/* Classificação e Status */}
+              <div>
+                <h3 className="text-lg font-semibold text-slate-200 mb-3 border-b border-slate-600 pb-2">
+                  Classificação e Status
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-slate-300">Categoria</Label>
+                    <div className="mt-1">
+                      <Badge className={getCategoryStyle(selectedLead.categoria_lead)}>
+                        {selectedLead.categoria_lead || 'Não categorizado'}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-300">Status</Label>
+                    <div className="mt-1">
+                      <Badge className={getStatusStyle(selectedLead.status_lead)}>
+                        {selectedLead.status_lead || 'Novo'}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-300">Score Total</Label>
+                    <p className="text-slate-100 font-medium text-lg">{selectedLead.score_total || 0}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-300">Prioridade</Label>
+                    <p className="text-slate-100 font-medium">{selectedLead.prioridade_atendimento || 0}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-300">Potencial</Label>
+                    <div className="mt-1">
+                      <Badge className={getPotentialStyle(selectedLead.potencial_recuperacao)}>
+                        {selectedLead.potencial_recuperacao || 'Não avaliado'}
+                      </Badge>
+                    </div>
+                  </div>
+                  {selectedLead.status_qualificacao && (
+                    <div>
+                      <Label className="text-sm font-medium text-slate-300">Status Qualificação</Label>
+                      <p className="text-slate-100 font-medium">{selectedLead.status_qualificacao}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Informações do Caso */}
+              {(selectedLead.tipo_caso || selectedLead.tipo_financiamento || selectedLead.status_imovel) && (
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-200 mb-3 border-b border-slate-600 pb-2">
+                    Informações do Caso
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedLead.tipo_caso && (
+                      <div>
+                        <Label className="text-sm font-medium text-slate-300">Tipo do Caso</Label>
+                        <p className="text-slate-100 font-medium">{selectedLead.tipo_caso}</p>
+                      </div>
+                    )}
+                    {selectedLead.tipo_financiamento && (
+                      <div>
+                        <Label className="text-sm font-medium text-slate-300">Tipo de Financiamento</Label>
+                        <p className="text-slate-100 font-medium">{selectedLead.tipo_financiamento}</p>
+                      </div>
+                    )}
+                    {selectedLead.status_imovel && (
+                      <div>
+                        <Label className="text-sm font-medium text-slate-300">Status do Imóvel</Label>
+                        <p className="text-slate-100 font-medium">{selectedLead.status_imovel}</p>
+                      </div>
+                    )}
+                    {selectedLead.proposta_recomendada && (
+                      <div>
+                        <Label className="text-sm font-medium text-slate-300">Proposta Recomendada</Label>
+                        <p className="text-slate-100 font-medium">{selectedLead.proposta_recomendada}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Valores */}
+              <div>
+                <h3 className="text-lg font-semibold text-slate-200 mb-3 border-b border-slate-600 pb-2">
+                  Valores
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-slate-300">Valor Pago</Label>
+                    <p className="text-slate-100 font-medium text-lg">{formatCurrency(selectedLead.valor_pago)}</p>
+                  </div>
+                  {selectedLead.valor_estimado_recuperacao && (
+                    <div>
+                      <Label className="text-sm font-medium text-slate-300">Valor Estimado de Recuperação</Label>
+                      <p className="text-slate-100 font-medium text-lg text-green-400">
+                        {formatCurrency(selectedLead.valor_estimado_recuperacao)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Resumo da IA */}
+              {selectedLead.resumo_ia && (
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-200 mb-3 border-b border-slate-600 pb-2">
+                    Análise da IA
+                  </h3>
+                  <div className="bg-slate-800 rounded-lg p-4">
+                    <p className="text-slate-100 leading-relaxed">{selectedLead.resumo_ia}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Observações e Motivos */}
+              {(selectedLead.observacoes || selectedLead.motivo_desqualificacao) && (
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-200 mb-3 border-b border-slate-600 pb-2">
+                    Observações
+                  </h3>
+                  <div className="space-y-4">
+                    {selectedLead.observacoes && (
+                      <div>
+                        <Label className="text-sm font-medium text-slate-300">Observações Gerais</Label>
+                        <div className="bg-slate-800 rounded-lg p-4 mt-2">
+                          <p className="text-slate-100 leading-relaxed">{selectedLead.observacoes}</p>
+                        </div>
+                      </div>
+                    )}
+                    {selectedLead.motivo_desqualificacao && (
+                      <div>
+                        <Label className="text-sm font-medium text-slate-300">Motivo da Desqualificação</Label>
+                        <div className="bg-red-900/20 border border-red-700/50 rounded-lg p-4 mt-2">
+                          <p className="text-red-300 leading-relaxed">{selectedLead.motivo_desqualificacao}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>;

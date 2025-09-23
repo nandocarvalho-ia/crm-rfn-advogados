@@ -13,12 +13,21 @@ export interface LeadRoger {
   status_lead: string | null;
   score_total: number | null;
   created_at: string;
+  updated_at: string;
   potencial_recuperacao: string | null;
   valor_pago: number | null;
   qualificado_automaticamente: boolean | null;
   status_qualificacao: string | null;
   prioridade_atendimento: number | null;
   observacoes: string | null;
+  resumo_ia: string | null;
+  motivo_desqualificacao: string | null;
+  data_compra: string | null;
+  tipo_caso: string | null;
+  tipo_financiamento: string | null;
+  status_imovel: string | null;
+  valor_estimado_recuperacao: number | null;
+  proposta_recomendada: string | null;
   ia_bloqueada?: boolean | null;
 }
 
