@@ -321,7 +321,7 @@ const CRMDashboardReal: React.FC = () => {
                               variant="outline" 
                               onClick={e => {
                                 e.stopPropagation();
-                                toggleIA(lead.telefone, false); // false = currently not blocked, so we want to block
+                                toggleIA(lead.telefone, false);
                               }}
                               disabled={isTogglingIA(lead.telefone)}
                               className="w-10 h-10 p-0"
