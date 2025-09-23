@@ -8,7 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2 } from 'lucide-react';
 import { useLeadsRoger, LeadRoger } from '@/hooks/useLeadsRoger';
+import { useIABlockControl } from '@/hooks/useIABlockControl';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Play, Pause } from 'lucide-react';
 const getCategoryStyle = (category: string | null) => {
   switch (category) {
     case 'PREMIUM_ATRASO':
@@ -68,6 +70,7 @@ const CRMDashboardReal: React.FC = () => {
     error,
     metrics
   } = useLeadsRoger();
+  const { toggleIA, isLoading: isTogglingIA } = useIABlockControl();
   const [selectedLead, setSelectedLead] = useState<LeadRoger | null>(null);
   const [showLeadModal, setShowLeadModal] = useState(false);
 
@@ -267,7 +270,7 @@ const CRMDashboardReal: React.FC = () => {
                       <th className="text-left py-3 px-4 font-semibold text-foreground">Status</th>
                       <th className="text-left py-3 px-4 font-semibold text-foreground">Score</th>
                       <th className="text-left py-3 px-4 font-semibold text-foreground">Data de Entrada</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Valor Estimado</th>
+                      <th className="text-left py-3 px-4 font-semibold text-foreground">Valor Pago</th>
                       <th className="text-left py-3 px-4 font-semibold text-foreground">Ações</th>
                     </tr>
                   </thead>
@@ -308,16 +311,26 @@ const CRMDashboardReal: React.FC = () => {
                         </td>
                         <td className="py-4 px-4">
                           <span className="text-sm font-medium text-foreground">
-                            {formatCurrency(lead.valor_estimado_recuperacao)}
+                            {formatCurrency(lead.valor_pago)}
                           </span>
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex space-x-2">
-                            <Button size="sm" variant="outline" onClick={e => {
-                        e.stopPropagation();
-                        openLeadModal(lead);
-                      }}>
-                              Ver Detalhes
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={e => {
+                                e.stopPropagation();
+                                toggleIA(lead.telefone, false); // false = currently not blocked, so we want to block
+                              }}
+                              disabled={isTogglingIA(lead.telefone)}
+                              className="w-10 h-10 p-0"
+                            >
+                              {isTogglingIA(lead.telefone) ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Play className="h-4 w-4" />
+                              )}
                             </Button>
                             <Button size="sm" variant="outline" onClick={e => {
                         e.stopPropagation();
@@ -386,8 +399,8 @@ const CRMDashboardReal: React.FC = () => {
                   </Badge>
                 </div>
                 <div>
-                  <h4 className="font-semibold">Valor Estimado:</h4>
-                  <p>{formatCurrency(selectedLead.valor_estimado_recuperacao)}</p>
+                  <h4 className="font-semibold">Valor Pago:</h4>
+                  <p>{formatCurrency(selectedLead.valor_pago)}</p>
                 </div>
               </div>
               {selectedLead.observacoes && <div>

@@ -14,7 +14,7 @@ export interface LeadRoger {
   score_total: number | null;
   created_at: string;
   potencial_recuperacao: string | null;
-  valor_estimado_recuperacao: number | null;
+  valor_pago: number | null;
   qualificado_automaticamente: boolean | null;
   status_qualificacao: string | null;
   prioridade_atendimento: number | null;
@@ -68,7 +68,7 @@ export const useLeadsRoger = () => {
       ['PREMIUM_ATRASO', 'A_EXCELENTE', 'B_MUITO_BOM'].includes(lead.categoria_lead || '')
     ).length,
     premiumLeads: leads.filter(lead => lead.categoria_lead === 'PREMIUM_ATRASO').length,
-    totalPotential: leads.reduce((sum, lead) => sum + (lead.valor_estimado_recuperacao || 0), 0),
+    totalPotential: leads.reduce((sum, lead) => sum + (lead.valor_pago || 0), 0),
     conversionRate: leads.length > 0 
       ? ((leads.filter(lead => lead.status_lead === 'CONVERTIDO').length / leads.length) * 100) 
       : 0,
