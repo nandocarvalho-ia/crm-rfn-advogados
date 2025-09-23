@@ -7,7 +7,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2 } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2, CalendarIcon } from 'lucide-react';
+import { format, subDays, subHours, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { useLeadsRoger, LeadRoger } from '@/hooks/useLeadsRoger';
 import { useIABlockControl } from '@/hooks/useIABlockControl';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -79,7 +83,47 @@ const CRMDashboardReal: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('Todos');
   const [categoryFilter, setCategoryFilter] = useState('Todas');
-  const [potentialFilter, setPotentialFilter] = useState('Todos');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [customDateRange, setCustomDateRange] = useState<{
+    from?: Date;
+    to?: Date;
+    startTime: string;
+    endTime: string;
+  }>({
+    startTime: '00:00',
+    endTime: '23:59'
+  });
+  const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
+
+  // Date filter logic
+  const getDateFilterRange = () => {
+    const now = new Date();
+    switch (dateFilter) {
+      case '24h':
+        return { from: subHours(now, 24), to: now };
+      case '7d':
+        return { from: subDays(now, 7), to: now };
+      case '30d':
+        return { from: subDays(now, 30), to: now };
+      case 'custom':
+        if (customDateRange.from && customDateRange.to) {
+          const fromDateTime = new Date(customDateRange.from);
+          const toDateTime = new Date(customDateRange.to);
+          
+          // Set custom times
+          const [fromHour, fromMinute] = customDateRange.startTime.split(':');
+          const [toHour, toMinute] = customDateRange.endTime.split(':');
+          
+          fromDateTime.setHours(parseInt(fromHour), parseInt(fromMinute), 0, 0);
+          toDateTime.setHours(parseInt(toHour), parseInt(toMinute), 59, 999);
+          
+          return { from: fromDateTime, to: toDateTime };
+        }
+        return null;
+      default:
+        return null;
+    }
+  };
 
   // Filtered leads
   const filteredLeads = useMemo(() => {
@@ -88,15 +132,27 @@ const CRMDashboardReal: React.FC = () => {
       const matchesSearch = (lead.nome_lead || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'Todos' || lead.status_lead === statusFilter.toUpperCase();
       const matchesCategory = categoryFilter === 'Todas' || lead.categoria_lead === categoryFilter.replace(' ', '_').toUpperCase();
-      const matchesPotential = potentialFilter === 'Todos' || lead.potencial_recuperacao?.toLowerCase() === potentialFilter.toLowerCase();
-      return matchesSearch && matchesStatus && matchesCategory && matchesPotential;
+      
+      // Date filter logic
+      const dateRange = getDateFilterRange();
+      let matchesDate = true;
+      if (dateRange) {
+        const leadDate = new Date(lead.created_at);
+        matchesDate = isAfter(leadDate, dateRange.from) && isBefore(leadDate, dateRange.to);
+      }
+      
+      return matchesSearch && matchesStatus && matchesCategory && matchesDate;
     });
-  }, [leads, searchTerm, statusFilter, categoryFilter, potentialFilter]);
+  }, [leads, searchTerm, statusFilter, categoryFilter, dateFilter, customDateRange]);
   const clearFilters = () => {
     setSearchTerm('');
     setStatusFilter('Todos');
     setCategoryFilter('Todas');
-    setPotentialFilter('Todos');
+    setDateFilter('all');
+    setCustomDateRange({
+      startTime: '00:00',
+      endTime: '23:59'
+    });
   };
   const openLeadModal = (lead: LeadRoger) => {
     setSelectedLead(lead);
@@ -223,19 +279,117 @@ const CRMDashboardReal: React.FC = () => {
                     </SelectContent>
                   </Select>
 
-                  <Select value={potentialFilter} onValueChange={setPotentialFilter}>
-                    <SelectTrigger className="w-full sm:w-40 bg-card/60 border-crm-purple/20 hover:border-crm-purple/40 transition-colors">
-                      <SelectValue placeholder="Potencial">
-                        {potentialFilter ? `Potencial: ${potentialFilter}` : "Potencial"}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Todos">Todos</SelectItem>
-                      <SelectItem value="Alto">Alto</SelectItem>
-                      <SelectItem value="Medio">Médio</SelectItem>
-                      <SelectItem value="Baixo">Baixo</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {/* Date Filter */}
+                  <div className="w-full sm:w-52">
+                    <Select value={dateFilter} onValueChange={setDateFilter}>
+                      <SelectTrigger className="bg-card/60 border-blue-500/20 hover:border-blue-500/40 transition-colors">
+                        <CalendarIcon className="h-4 w-4 mr-2" />
+                        <SelectValue placeholder="Data de Entrada">
+                          {dateFilter === 'all' && 'Todas as datas'}
+                          {dateFilter === '24h' && 'Últimas 24h'}
+                          {dateFilter === '7d' && 'Últimos 7 dias'}
+                          {dateFilter === '30d' && 'Últimos 30 dias'}
+                          {dateFilter === 'custom' && (customDateRange.from && customDateRange.to 
+                            ? `${format(customDateRange.from, 'dd/MM/yy', { locale: ptBR })} - ${format(customDateRange.to, 'dd/MM/yy', { locale: ptBR })}`
+                            : 'Personalizado')}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as datas</SelectItem>
+                        <SelectItem value="24h">Últimas 24 horas</SelectItem>
+                        <SelectItem value="7d">Últimos 7 dias</SelectItem>
+                        <SelectItem value="30d">Últimos 30 dias</SelectItem>
+                        <SelectItem value="custom">Personalizado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    {/* Custom Date Range Popover */}
+                    {dateFilter === 'custom' && (
+                      <Popover open={showCustomDatePicker} onOpenChange={setShowCustomDatePicker}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="w-full mt-2 text-left font-normal"
+                            onClick={() => setShowCustomDatePicker(true)}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {customDateRange.from && customDateRange.to ? (
+                              `${format(customDateRange.from, 'dd/MM/yyyy', { locale: ptBR })} - ${format(customDateRange.to, 'dd/MM/yyyy', { locale: ptBR })}`
+                            ) : (
+                              'Selecionar período'
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <div className="p-4 space-y-4">
+                            <div className="space-y-2">
+                              <Label className="text-sm font-medium">Período</Label>
+                              <Calendar
+                                mode="range"
+                                selected={{
+                                  from: customDateRange.from,
+                                  to: customDateRange.to
+                                }}
+                                onSelect={(range) => {
+                                  setCustomDateRange(prev => ({
+                                    ...prev,
+                                    from: range?.from,
+                                    to: range?.to
+                                  }));
+                                }}
+                                className="pointer-events-auto"
+                                initialFocus
+                              />
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <Label className="text-sm font-medium">Hora inicial</Label>
+                                <Input
+                                  type="time"
+                                  value={customDateRange.startTime}
+                                  onChange={(e) => setCustomDateRange(prev => ({
+                                    ...prev,
+                                    startTime: e.target.value
+                                  }))}
+                                  className="mt-1"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium">Hora final</Label>
+                                <Input
+                                  type="time"
+                                  value={customDateRange.endTime}
+                                  onChange={(e) => setCustomDateRange(prev => ({
+                                    ...prev,
+                                    endTime: e.target.value
+                                  }))}
+                                  className="mt-1"
+                                />
+                              </div>
+                            </div>
+                            
+                            <div className="flex justify-end space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowCustomDatePicker(false)}
+                              >
+                                Cancelar
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => setShowCustomDatePicker(false)}
+                                disabled={!customDateRange.from || !customDateRange.to}
+                              >
+                                Aplicar
+                              </Button>
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  </div>
                 </div>
 
                 <Button variant="outline" onClick={clearFilters} className="text-muted-foreground hover:text-foreground bg-card/60 border-border/60 hover:bg-muted/80 transition-colors">
