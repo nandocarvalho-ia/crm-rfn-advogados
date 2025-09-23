@@ -99,7 +99,7 @@ const CRMDashboardReal: React.FC = () => {
     setShowLeadModal(true);
   };
   if (error) {
-    return <div className="min-h-screen bg-crm-primary flex items-center justify-center">
+    return <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="p-6">
           <CardContent>
             <p className="text-destructive">Erro ao carregar dados: {error.message}</p>
@@ -107,7 +107,7 @@ const CRMDashboardReal: React.FC = () => {
         </Card>
       </div>;
   }
-  return <div className="min-h-screen bg-crm-primary font-inter">
+  return <div className="min-h-screen bg-background font-inter">
       {/* Header */}
       <header className="bg-card border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -131,34 +131,34 @@ const CRMDashboardReal: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-blue-soft border-crm-blue/20 hover:shadow-lg transition-all duration-300">
+          <Card className="bg-gradient-blue-soft border-crm-blue/20 hover:shadow-lg transition-all duration-300 bg-slate-900">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Leads</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-100">Total de Leads</CardTitle>
               <Users className="h-6 w-6 text-crm-blue" />
             </CardHeader>
             <CardContent>
-              {isLoading ? <Skeleton className="h-8 w-16" /> : <div className="text-3xl font-bold">{metrics.totalLeads}</div>}
+              {isLoading ? <Skeleton className="h-8 w-16 bg-transparent" /> : <div className="text-3xl font-bold">{metrics.totalLeads}</div>}
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-green-soft border-crm-green/20 hover:shadow-lg transition-all duration-300">
+          <Card className="bg-gradient-green-soft border-crm-green/20 hover:shadow-lg transition-all duration-300 bg-slate-900">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Leads Qualificados</CardTitle>
-              <TrendingUp className="h-6 w-6 text-crm-green" />
+              <CardTitle className="text-sm font-medium text-slate-100">Leads Qualificados</CardTitle>
+              <TrendingUp className="h-6 w-6 text-crm-green bg-transparent" />
             </CardHeader>
             <CardContent>
               {isLoading ? <Skeleton className="h-8 w-16" /> : <>
                   <div className="text-3xl font-bold">{metrics.qualifiedLeads}</div>
-                  <p className="text-sm text-crm-green font-medium">
+                  <p className="text-sm font-medium text-slate-100">
                     {metrics.conversionRate.toFixed(1)}% de conversão
                   </p>
                 </>}
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-purple-soft border-crm-purple/20 hover:shadow-lg transition-all duration-300">
+          <Card className="bg-gradient-purple-soft border-crm-purple/20 hover:shadow-lg transition-all duration-300 bg-slate-900">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Leads Premium</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-100">Leads Premium</CardTitle>
               <Star className="h-6 w-6 text-crm-purple" />
             </CardHeader>
             <CardContent>
@@ -166,9 +166,9 @@ const CRMDashboardReal: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-yellow-soft border-crm-yellow/20 hover:shadow-lg transition-all duration-300">
+          <Card className="bg-gradient-yellow-soft border-crm-yellow/20 hover:shadow-lg transition-all duration-300 bg-slate-900">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Potencial Total</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-100">Potencial Total</CardTitle>
               <DollarSign className="h-6 w-6 text-crm-yellow" />
             </CardHeader>
             <CardContent>
