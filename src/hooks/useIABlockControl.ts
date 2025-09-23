@@ -12,7 +12,7 @@ export const useIABlockControl = () => {
     mutationFn: async ({ telefone, nome, block }: { telefone: string; nome: string | null; block: boolean }) => {
       const { error } = await supabase
         .from('leads_roger')
-        .update({ ia_bloqueada: block })
+        .update({ ia_bloqueada: block } as any)
         .eq('telefone', telefone);
       
       if (error) throw error;
