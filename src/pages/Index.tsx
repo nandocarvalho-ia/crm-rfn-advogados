@@ -1,7 +1,13 @@
-import CRMDashboard from "@/components/CRMDashboard";
+import CRMDashboardReal from "@/components/CRMDashboardReal";
+import { Toaster } from "@/components/ui/toaster";
 
 const Index = () => {
-  return <CRMDashboard />;
+  return (
+    <>
+      <CRMDashboardReal />
+      <Toaster />
+    </>
+  );
 };
 
 export default Index;
