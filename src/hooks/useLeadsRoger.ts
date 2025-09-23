@@ -19,7 +19,7 @@ export interface LeadRoger {
   status_qualificacao: string | null;
   prioridade_atendimento: number | null;
   observacoes: string | null;
-  atendente?: string | null;
+  ia_bloqueada?: boolean | null;
 }
 
 export const useLeadsRoger = () => {
@@ -32,23 +32,12 @@ export const useLeadsRoger = () => {
     queryFn: async () => {
       const { data: leadsData, error: leadsError } = await supabase
         .from('leads_roger')
-        .select(`
-          *,
-          fluxo_ia:"[FLUXO] • IA"!left("ATENDENTE")
-        `)
-        .eq('[FLUXO] • IA.INSTÂNCIA', 'roger')
+        .select('*')
         .order('created_at', { ascending: false });
       
       if (leadsError) throw leadsError;
       
-      // Map the fluxo_ia data to atendente field
-      const mappedData = (leadsData || []).map((lead: any) => ({
-        ...lead,
-        atendente: lead.fluxo_ia?.[0]?.ATENDENTE || null,
-        fluxo_ia: undefined // Remove the nested object
-      }));
-      
-      return mappedData as LeadRoger[];
+      return (leadsData || []) as LeadRoger[];
     },
   });
 
