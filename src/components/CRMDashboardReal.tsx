@@ -134,48 +134,48 @@ const CRMDashboardReal: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-slate-700">
         {/* Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-blue-soft border-crm-blue/20 hover:shadow-lg transition-all duration-300 bg-slate-900">
+          <Card className="bg-slate-900 border-slate-700 hover:shadow-lg transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-100">Total de Leads</CardTitle>
-              <Users className="h-6 w-6 text-crm-blue" />
+              <CardTitle className="text-sm font-medium text-slate-300">Total de Leads</CardTitle>
+              <Users className="h-6 w-6 text-slate-300" />
             </CardHeader>
             <CardContent>
-              {isLoading ? <Skeleton className="h-8 w-16 bg-transparent" /> : <div className="text-3xl font-bold">{metrics.totalLeads}</div>}
+              {isLoading ? <Skeleton className="h-8 w-16 bg-slate-700" /> : <div className="text-3xl font-bold text-slate-300">{metrics.totalLeads}</div>}
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-green-soft border-crm-green/20 hover:shadow-lg transition-all duration-300 bg-slate-900">
+          <Card className="bg-slate-900 border-slate-700 hover:shadow-lg transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-100">Leads Qualificados</CardTitle>
-              <TrendingUp className="h-6 w-6 text-crm-green bg-transparent" />
+              <CardTitle className="text-sm font-medium text-slate-300">Leads Qualificados</CardTitle>
+              <TrendingUp className="h-6 w-6 text-slate-300" />
             </CardHeader>
             <CardContent>
-              {isLoading ? <Skeleton className="h-8 w-16" /> : <>
-                  <div className="text-3xl font-bold">{metrics.qualifiedLeads}</div>
-                  <p className="text-sm font-medium text-slate-100">
+              {isLoading ? <Skeleton className="h-8 w-16 bg-slate-700" /> : <>
+                  <div className="text-3xl font-bold text-slate-300">{metrics.qualifiedLeads}</div>
+                  <p className="text-sm font-medium text-slate-300">
                     {metrics.conversionRate.toFixed(1)}% de conversão
                   </p>
                 </>}
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-purple-soft border-crm-purple/20 hover:shadow-lg transition-all duration-300 bg-slate-900">
+          <Card className="bg-slate-900 border-slate-700 hover:shadow-lg transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-100">Leads Premium</CardTitle>
-              <Star className="h-6 w-6 text-crm-purple" />
+              <CardTitle className="text-sm font-medium text-slate-300">Leads Premium</CardTitle>
+              <Star className="h-6 w-6 text-slate-300" />
             </CardHeader>
             <CardContent>
-              {isLoading ? <Skeleton className="h-8 w-16" /> : <div className="text-3xl font-bold">{metrics.premiumLeads}</div>}
+              {isLoading ? <Skeleton className="h-8 w-16 bg-slate-700" /> : <div className="text-3xl font-bold text-slate-300">{metrics.premiumLeads}</div>}
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-yellow-soft border-crm-yellow/20 hover:shadow-lg transition-all duration-300 bg-slate-900">
+          <Card className="bg-slate-900 border-slate-700 hover:shadow-lg transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-100">Potencial Total</CardTitle>
-              <DollarSign className="h-6 w-6 text-crm-yellow" />
+              <CardTitle className="text-sm font-medium text-slate-300">Potencial Total</CardTitle>
+              <DollarSign className="h-6 w-6 text-slate-300" />
             </CardHeader>
             <CardContent>
-              {isLoading ? <Skeleton className="h-8 w-24" /> : <div className="text-3xl font-bold">{formatCurrency(metrics.totalPotential)}</div>}
+              {isLoading ? <Skeleton className="h-8 w-24 bg-slate-700" /> : <div className="text-3xl font-bold text-slate-300">{formatCurrency(metrics.totalPotential)}</div>}
             </CardContent>
           </Card>
         </div>
