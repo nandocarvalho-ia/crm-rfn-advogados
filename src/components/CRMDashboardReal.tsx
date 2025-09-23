@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2 } from 'lucide-react';
 import { useLeadsRoger, LeadRoger } from '@/hooks/useLeadsRoger';
 import { Skeleton } from '@/components/ui/skeleton';
-
 const getCategoryStyle = (category: string | null) => {
   switch (category) {
     case 'PREMIUM_ATRASO':
@@ -28,7 +27,6 @@ const getCategoryStyle = (category: string | null) => {
       return 'bg-muted text-muted-foreground';
   }
 };
-
 const getPotentialStyle = (potential: string | null) => {
   switch (potential?.toLowerCase()) {
     case 'alto':
@@ -41,7 +39,6 @@ const getPotentialStyle = (potential: string | null) => {
       return 'bg-muted text-muted-foreground';
   }
 };
-
 const getStatusStyle = (status: string | null) => {
   switch (status?.toUpperCase()) {
     case 'NOVO':
@@ -54,21 +51,23 @@ const getStatusStyle = (status: string | null) => {
       return 'bg-muted text-muted-foreground';
   }
 };
-
 const formatCurrency = (value: number | null) => {
   if (!value) return 'R$ 0,00';
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
-    currency: 'BRL',
+    currency: 'BRL'
   }).format(value);
 };
-
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('pt-BR');
 };
-
 const CRMDashboardReal: React.FC = () => {
-  const { leads, isLoading, error, metrics } = useLeadsRoger();
+  const {
+    leads,
+    isLoading,
+    error,
+    metrics
+  } = useLeadsRoger();
   const [selectedLead, setSelectedLead] = useState<LeadRoger | null>(null);
   const [showLeadModal, setShowLeadModal] = useState(false);
 
@@ -81,52 +80,44 @@ const CRMDashboardReal: React.FC = () => {
   // Filtered leads
   const filteredLeads = useMemo(() => {
     if (!leads) return [];
-    
     return leads.filter(lead => {
       const matchesSearch = (lead.nome_lead || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'Todos' || lead.status_lead === statusFilter.toUpperCase();
       const matchesCategory = categoryFilter === 'Todas' || lead.categoria_lead === categoryFilter.replace(' ', '_').toUpperCase();
-      const matchesPotential = potentialFilter === 'Todos' || (lead.potencial_recuperacao?.toLowerCase() === potentialFilter.toLowerCase());
+      const matchesPotential = potentialFilter === 'Todos' || lead.potencial_recuperacao?.toLowerCase() === potentialFilter.toLowerCase();
       return matchesSearch && matchesStatus && matchesCategory && matchesPotential;
     });
   }, [leads, searchTerm, statusFilter, categoryFilter, potentialFilter]);
-
   const clearFilters = () => {
     setSearchTerm('');
     setStatusFilter('Todos');
     setCategoryFilter('Todas');
     setPotentialFilter('Todos');
   };
-
   const openLeadModal = (lead: LeadRoger) => {
     setSelectedLead(lead);
     setShowLeadModal(true);
   };
-
   if (error) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+    return <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="p-6">
           <CardContent>
             <p className="text-destructive">Erro ao carregar dados: {error.message}</p>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background font-inter">
+  return <div className="min-h-screen bg-background font-inter">
       {/* Header */}
       <header className="bg-card border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-8">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">VIAM</h1>
+                
               </div>
               <div>
-                <h2 className="text-3xl font-bold text-foreground">CRM Advogados</h2>
+                <h2 className="text-3xl font-bold text-foreground">CRM RFN Advogados</h2>
                 <p className="text-muted-foreground text-lg">Dashboard de Leads e Qualificação</p>
               </div>
             </div>
@@ -146,11 +137,7 @@ const CRMDashboardReal: React.FC = () => {
               <Users className="h-6 w-6 text-crm-blue" />
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                <div className="text-3xl font-bold">{metrics.totalLeads}</div>
-              )}
+              {isLoading ? <Skeleton className="h-8 w-16" /> : <div className="text-3xl font-bold">{metrics.totalLeads}</div>}
             </CardContent>
           </Card>
 
@@ -160,16 +147,12 @@ const CRMDashboardReal: React.FC = () => {
               <TrendingUp className="h-6 w-6 text-crm-green" />
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                <>
+              {isLoading ? <Skeleton className="h-8 w-16" /> : <>
                   <div className="text-3xl font-bold">{metrics.qualifiedLeads}</div>
                   <p className="text-sm text-crm-green font-medium">
                     {metrics.conversionRate.toFixed(1)}% de conversão
                   </p>
-                </>
-              )}
+                </>}
             </CardContent>
           </Card>
 
@@ -179,11 +162,7 @@ const CRMDashboardReal: React.FC = () => {
               <Star className="h-6 w-6 text-crm-purple" />
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                <div className="text-3xl font-bold">{metrics.premiumLeads}</div>
-              )}
+              {isLoading ? <Skeleton className="h-8 w-16" /> : <div className="text-3xl font-bold">{metrics.premiumLeads}</div>}
             </CardContent>
           </Card>
 
@@ -193,11 +172,7 @@ const CRMDashboardReal: React.FC = () => {
               <DollarSign className="h-6 w-6 text-crm-yellow" />
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-8 w-24" />
-              ) : (
-                <div className="text-3xl font-bold">{formatCurrency(metrics.totalPotential)}</div>
-              )}
+              {isLoading ? <Skeleton className="h-8 w-24" /> : <div className="text-3xl font-bold">{formatCurrency(metrics.totalPotential)}</div>}
             </CardContent>
           </Card>
         </div>
@@ -209,12 +184,7 @@ const CRMDashboardReal: React.FC = () => {
               <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                 <div className="relative lg:w-80">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    placeholder="Buscar lead por nome..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+                  <Input placeholder="Buscar lead por nome..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
                 </div>
                 
                 <div className="flex flex-col sm:flex-row gap-3 flex-1">
@@ -264,11 +234,7 @@ const CRMDashboardReal: React.FC = () => {
                   </Select>
                 </div>
 
-                <Button
-                  variant="outline"
-                  onClick={clearFilters}
-                  className="text-muted-foreground hover:text-foreground bg-card/60 border-border/60 hover:bg-muted/80 transition-colors"
-                >
+                <Button variant="outline" onClick={clearFilters} className="text-muted-foreground hover:text-foreground bg-card/60 border-border/60 hover:bg-muted/80 transition-colors">
                   <X className="h-4 w-4 mr-2" />
                   Limpar Filtros
                 </Button>
@@ -283,20 +249,15 @@ const CRMDashboardReal: React.FC = () => {
             <CardTitle className="text-xl font-semibold">Leads</CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex items-center space-x-4">
+            {isLoading ? <div className="space-y-4">
+                {[1, 2, 3, 4, 5].map(i => <div key={i} className="flex items-center space-x-4">
                     <Skeleton className="h-12 w-12 rounded-full" />
                     <div className="space-y-2">
                       <Skeleton className="h-4 w-[250px]" />
                       <Skeleton className="h-4 w-[200px]" />
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
+                  </div>)}
+              </div> : <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
@@ -311,12 +272,7 @@ const CRMDashboardReal: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredLeads.map((lead) => (
-                      <tr
-                        key={lead.id}
-                        className="border-b border-border hover:bg-muted/50 cursor-pointer"
-                        onClick={() => openLeadModal(lead)}
-                      >
+                    {filteredLeads.map(lead => <tr key={lead.id} className="border-b border-border hover:bg-muted/50 cursor-pointer" onClick={() => openLeadModal(lead)}>
                         <td className="py-4 px-4">
                           <div>
                             <div className="font-medium text-foreground">
@@ -357,34 +313,24 @@ const CRMDashboardReal: React.FC = () => {
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex space-x-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openLeadModal(lead);
-                              }}
-                            >
+                            <Button size="sm" variant="outline" onClick={e => {
+                        e.stopPropagation();
+                        openLeadModal(lead);
+                      }}>
                               Ver Detalhes
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Chat functionality can be implemented later
-                              }}
-                            >
+                            <Button size="sm" variant="outline" onClick={e => {
+                        e.stopPropagation();
+                        // Chat functionality can be implemented later
+                      }}>
                               <MessageCircle className="h-4 w-4" />
                             </Button>
                           </div>
                         </td>
-                      </tr>
-                    ))}
+                      </tr>)}
                   </tbody>
                 </table>
-              </div>
-            )}
+              </div>}
           </CardContent>
         </Card>
       </div>
@@ -395,8 +341,7 @@ const CRMDashboardReal: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Detalhes do Lead</DialogTitle>
           </DialogHeader>
-          {selectedLead && (
-            <div className="space-y-4">
+          {selectedLead && <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h4 className="font-semibold">Nome:</h4>
@@ -445,18 +390,13 @@ const CRMDashboardReal: React.FC = () => {
                   <p>{formatCurrency(selectedLead.valor_estimado_recuperacao)}</p>
                 </div>
               </div>
-              {selectedLead.observacoes && (
-                <div>
+              {selectedLead.observacoes && <div>
                   <h4 className="font-semibold">Observações:</h4>
                   <p className="mt-2 p-3 bg-muted rounded-md">{selectedLead.observacoes}</p>
-                </div>
-              )}
-            </div>
-          )}
+                </div>}
+            </div>}
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
 export default CRMDashboardReal;
