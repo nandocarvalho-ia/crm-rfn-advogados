@@ -10,14 +10,14 @@ export const useIABlockControl = () => {
 
   const toggleIAMutation = useMutation({
     mutationFn: async ({ telefone, nome, block }: { telefone: string; nome: string | null; block: boolean }) => {
-      const { data, error } = await supabase.functions.invoke('toggle-ia-block', {
-        body: { telefone, nome, block }
-      });
+      const { error } = await supabase
+        .from('leads_roger')
+        .update({ ia_bloqueada: block })
+        .eq('telefone', telefone);
       
       if (error) throw error;
-      if (!data?.success) throw new Error('Falha ao alterar status da IA');
       
-      return data;
+      return { success: true };
     },
     onSuccess: (_, variables) => {
       toast({

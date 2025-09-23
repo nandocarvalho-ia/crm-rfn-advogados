@@ -30,7 +30,6 @@ export const useLeadsRoger = () => {
   const { data: leads = [], isLoading, error } = useQuery({
     queryKey: ['leads-roger'],
     queryFn: async () => {
-      // Buscar leads
       const { data: leadsData, error: leadsError } = await supabase
         .from('leads_roger')
         .select('*')
@@ -38,24 +37,7 @@ export const useLeadsRoger = () => {
       
       if (leadsError) throw leadsError;
       
-      // Buscar status de IA bloqueada usando edge function
-      let iaStatusMap = new Map();
-      try {
-        const { data: iaResponse } = await supabase.functions.invoke('get-ia-status');
-        if (iaResponse?.success && iaResponse?.statusMap) {
-          Object.entries(iaResponse.statusMap).forEach(([telefone, status]) => {
-            iaStatusMap.set(telefone, status);
-          });
-        }
-      } catch (error) {
-        console.warn('Erro ao buscar dados de IA bloqueada:', error);
-      }
-      
-      // Mapear os dados com o status real da IA
-      return (leadsData || []).map(lead => ({
-        ...lead,
-        ia_bloqueada: iaStatusMap.get(lead.telefone) || false
-      })) as LeadRoger[];
+      return (leadsData || []) as LeadRoger[];
     },
   });
 
