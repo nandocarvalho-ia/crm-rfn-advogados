@@ -15,6 +15,7 @@ import { ptBR } from 'date-fns/locale';
 import { useLeadsRoger, LeadRoger } from '@/hooks/useLeadsRoger';
 import { useIABlockControl } from '@/hooks/useIABlockControl';
 import { FollowUpModal } from '@/components/FollowUpModal';
+import { useBulkFollowUpManager } from '@/hooks/useBulkFollowUpManager';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Play, Pause } from 'lucide-react';
 
@@ -83,6 +84,7 @@ const CRMDashboardReal: React.FC = () => {
     metrics
   } = useLeadsRoger();
   const { toggleIA, isLoading: isTogglingIA } = useIABlockControl();
+  const { populateExistingLeads, updateAllLeads } = useBulkFollowUpManager();
   const [selectedLead, setSelectedLead] = useState<LeadRoger | null>(null);
   const [followUpModalOpen, setFollowUpModalOpen] = useState(false);
   const [selectedFollowUpLead, setSelectedFollowUpLead] = useState<LeadRoger | null>(null);
@@ -219,6 +221,22 @@ const CRMDashboardReal: React.FC = () => {
                 <h2 className="text-3xl font-bold text-foreground">CRM RFN Advogados</h2>
                 <p className="text-muted-foreground text-lg">Dashboard de Leads e Qualificação</p>
               </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={populateExistingLeads}
+              >
+                Popular Follow-ups
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={updateAllLeads}
+              >
+                Atualizar Todos
+              </Button>
             </div>
             <Badge className="bg-status-active-bg text-status-active px-4 py-2 text-sm font-semibold">
               Sistema Ativo

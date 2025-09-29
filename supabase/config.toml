@@ -32,3 +32,6 @@ smtp_port = 54326
 
 [functions.analyze-followup]
 verify_jwt = false
+
+[functions.bulk-analyze-followups]
+verify_jwt = false
