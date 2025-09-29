@@ -230,7 +230,7 @@ const CRMDashboardReal: React.FC = () => {
                 <>
                   <div className="text-3xl font-bold text-slate-300">{metrics.qualifiedLeads}</div>
                   <p className="text-sm font-medium text-slate-300">
-                    {metrics.conversionRate.toFixed(1)}% de conversão
+                    {metrics.qualificationRate.toFixed(1)}% de qualificação
                   </p>
                 </>
               )}

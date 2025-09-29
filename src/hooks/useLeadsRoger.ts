@@ -105,13 +105,16 @@ export const useLeadsRoger = () => {
   // Calculate metrics from real data
   const metrics = {
     totalLeads: leads.length,
-    qualifiedLeads: leads.filter(lead => 
-      ['PREMIUM_ATRASO', 'A_EXCELENTE', 'B_MUITO_BOM'].includes(lead.categoria_lead || '')
-    ).length,
-    premiumLeads: leads.filter(lead => lead.categoria_lead === 'PREMIUM_ATRASO').length,
-    totalPotential: leads.reduce((sum, lead) => sum + (lead.valor_pago || 0), 0),
-    conversionRate: leads.length > 0 
-      ? ((leads.filter(lead => lead.status_lead === 'CONVERTIDO').length / leads.length) * 100) 
+    qualifiedLeads: leads.filter(lead => lead.status_qualificacao === 'qualificado').length,
+    premiumLeads: leads.filter(lead => lead.categoria_lead?.startsWith('PREMIUM')).length,
+    totalPotential: leads
+      .filter(lead => lead.status_qualificacao === 'qualificado')
+      .reduce((sum, lead) => {
+        const valor = parseFloat(lead.valor_estimado_recuperacao?.toString() || '0');
+        return sum + (isNaN(valor) ? 0 : valor);
+      }, 0),
+    qualificationRate: leads.length > 0 
+      ? ((leads.filter(lead => lead.status_qualificacao === 'qualificado').length / leads.length) * 100) 
       : 0,
   };
 
