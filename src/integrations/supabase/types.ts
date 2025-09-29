@@ -418,6 +418,33 @@ export type Database = {
         }
         Relationships: []
       }
+      ia_bloqueada: {
+        Row: {
+          chatID: string
+          ia_bloqueada: string
+          instancia: string
+          nome: string | null
+          telefone: string
+          update_at: string | null
+        }
+        Insert: {
+          chatID: string
+          ia_bloqueada: string
+          instancia: string
+          nome?: string | null
+          telefone: string
+          update_at?: string | null
+        }
+        Update: {
+          chatID?: string
+          ia_bloqueada?: string
+          instancia?: string
+          nome?: string | null
+          telefone?: string
+          update_at?: string | null
+        }
+        Relationships: []
+      }
       interacoes: {
         Row: {
           conteudo: string | null
@@ -631,10 +658,9 @@ export type Database = {
       leads_roger: {
         Row: {
           categoria_lead: string | null
-          cobranca_judicial: boolean | null
+          cobranca_judicial: string | null
           created_at: string | null
           data_compra: string | null
-          data_entrega_prevista: string | null
           email: string | null
           estado: string | null
           id: string
@@ -643,30 +669,29 @@ export type Database = {
           nome_lead: string | null
           observacoes: string | null
           potencial_recuperacao: string | null
-          prioridade_atendimento: number | null
+          prioridade_atendimento: string | null
           proposta_recomendada: string | null
-          qualificado_automaticamente: boolean | null
+          qualificado_automaticamente: string | null
           resumo_ia: string | null
-          score_total: number | null
+          score_total: string | null
           situacao_parcelas: string | null
           status_imovel: string | null
           status_lead: string | null
           status_qualificacao: string | null
           telefone: string
-          tem_construcao: boolean | null
-          tempo_pagando_meses: number | null
+          tem_construcao: string | null
+          tempo_pagando_meses: string | null
           tipo_caso: string | null
           tipo_financiamento: string | null
           updated_at: string | null
-          valor_estimado_recuperacao: number | null
+          valor_estimado_recuperacao: string | null
           valor_pago: number | null
         }
         Insert: {
           categoria_lead?: string | null
-          cobranca_judicial?: boolean | null
+          cobranca_judicial?: string | null
           created_at?: string | null
           data_compra?: string | null
-          data_entrega_prevista?: string | null
           email?: string | null
           estado?: string | null
           id?: string
@@ -675,30 +700,29 @@ export type Database = {
           nome_lead?: string | null
           observacoes?: string | null
           potencial_recuperacao?: string | null
-          prioridade_atendimento?: number | null
+          prioridade_atendimento?: string | null
           proposta_recomendada?: string | null
-          qualificado_automaticamente?: boolean | null
+          qualificado_automaticamente?: string | null
           resumo_ia?: string | null
-          score_total?: number | null
+          score_total?: string | null
           situacao_parcelas?: string | null
           status_imovel?: string | null
           status_lead?: string | null
           status_qualificacao?: string | null
           telefone: string
-          tem_construcao?: boolean | null
-          tempo_pagando_meses?: number | null
+          tem_construcao?: string | null
+          tempo_pagando_meses?: string | null
           tipo_caso?: string | null
           tipo_financiamento?: string | null
           updated_at?: string | null
-          valor_estimado_recuperacao?: number | null
+          valor_estimado_recuperacao?: string | null
           valor_pago?: number | null
         }
         Update: {
           categoria_lead?: string | null
-          cobranca_judicial?: boolean | null
+          cobranca_judicial?: string | null
           created_at?: string | null
           data_compra?: string | null
-          data_entrega_prevista?: string | null
           email?: string | null
           estado?: string | null
           id?: string
@@ -707,22 +731,22 @@ export type Database = {
           nome_lead?: string | null
           observacoes?: string | null
           potencial_recuperacao?: string | null
-          prioridade_atendimento?: number | null
+          prioridade_atendimento?: string | null
           proposta_recomendada?: string | null
-          qualificado_automaticamente?: boolean | null
+          qualificado_automaticamente?: string | null
           resumo_ia?: string | null
-          score_total?: number | null
+          score_total?: string | null
           situacao_parcelas?: string | null
           status_imovel?: string | null
           status_lead?: string | null
           status_qualificacao?: string | null
           telefone?: string
-          tem_construcao?: boolean | null
-          tempo_pagando_meses?: number | null
+          tem_construcao?: string | null
+          tempo_pagando_meses?: string | null
           tipo_caso?: string | null
           tipo_financiamento?: string | null
           updated_at?: string | null
-          valor_estimado_recuperacao?: number | null
+          valor_estimado_recuperacao?: string | null
           valor_pago?: number | null
         }
         Relationships: []
@@ -883,6 +907,81 @@ export type Database = {
           id?: number
           message?: Json
           session_id?: string
+        }
+        Relationships: []
+      }
+      n8n_chat_histories_viam: {
+        Row: {
+          id: number
+          message: Json
+          session_id: string
+        }
+        Insert: {
+          id?: number
+          message: Json
+          session_id: string
+        }
+        Update: {
+          id?: number
+          message?: Json
+          session_id?: string
+        }
+        Relationships: []
+      }
+      n8n_chat_licitai_especialista_days: {
+        Row: {
+          id: number
+          message: Json
+          session_id: string
+        }
+        Insert: {
+          id?: number
+          message: Json
+          session_id: string
+        }
+        Update: {
+          id?: number
+          message?: Json
+          session_id?: string
+        }
+        Relationships: []
+      }
+      n8n_chat_licitai_teste_nando: {
+        Row: {
+          id: number
+          message: Json
+          session_id: string
+        }
+        Insert: {
+          id?: number
+          message: Json
+          session_id: string
+        }
+        Update: {
+          id?: number
+          message?: Json
+          session_id?: string
+        }
+        Relationships: []
+      }
+      n8n_vectors: {
+        Row: {
+          embedding: string | null
+          id: string
+          metadata: Json | null
+          text: string | null
+        }
+        Insert: {
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+          text?: string | null
+        }
+        Update: {
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+          text?: string | null
         }
         Relationships: []
       }
