@@ -385,6 +385,57 @@ export type Database = {
         }
         Relationships: []
       }
+      follow_ups_inteligentes: {
+        Row: {
+          configuracao_personalizada: Json | null
+          contexto_conversa: string | null
+          created_at: string | null
+          id: string
+          nome_lead: string | null
+          proximo_followup_1: Json | null
+          proximo_followup_2: Json | null
+          proximo_followup_3: Json | null
+          status: string | null
+          sugestoes_ia: Json | null
+          telefone: string
+          tipo_situacao: string
+          ultima_resposta_lead: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          configuracao_personalizada?: Json | null
+          contexto_conversa?: string | null
+          created_at?: string | null
+          id?: string
+          nome_lead?: string | null
+          proximo_followup_1?: Json | null
+          proximo_followup_2?: Json | null
+          proximo_followup_3?: Json | null
+          status?: string | null
+          sugestoes_ia?: Json | null
+          telefone: string
+          tipo_situacao: string
+          ultima_resposta_lead?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          configuracao_personalizada?: Json | null
+          contexto_conversa?: string | null
+          created_at?: string | null
+          id?: string
+          nome_lead?: string | null
+          proximo_followup_1?: Json | null
+          proximo_followup_2?: Json | null
+          proximo_followup_3?: Json | null
+          status?: string | null
+          sugestoes_ia?: Json | null
+          telefone?: string
+          tipo_situacao?: string
+          ultima_resposta_lead?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       historico_scoring: {
         Row: {
           created_at: string | null

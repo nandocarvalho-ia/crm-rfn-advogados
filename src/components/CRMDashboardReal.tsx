@@ -14,6 +14,7 @@ import { format, subDays, subHours, isWithinInterval, startOfDay, endOfDay } fro
 import { ptBR } from 'date-fns/locale';
 import { useLeadsRoger, LeadRoger } from '@/hooks/useLeadsRoger';
 import { useIABlockControl } from '@/hooks/useIABlockControl';
+import { FollowUpModal } from '@/components/FollowUpModal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Play, Pause } from 'lucide-react';
 
@@ -83,6 +84,8 @@ const CRMDashboardReal: React.FC = () => {
   } = useLeadsRoger();
   const { toggleIA, isLoading: isTogglingIA } = useIABlockControl();
   const [selectedLead, setSelectedLead] = useState<LeadRoger | null>(null);
+  const [followUpModalOpen, setFollowUpModalOpen] = useState(false);
+  const [selectedFollowUpLead, setSelectedFollowUpLead] = useState<LeadRoger | null>(null);
   const [showLeadModal, setShowLeadModal] = useState(false);
 
   // Filter states
@@ -183,6 +186,11 @@ const CRMDashboardReal: React.FC = () => {
   const openLeadModal = (lead: LeadRoger) => {
     setSelectedLead(lead);
     setShowLeadModal(true);
+  };
+
+  const openFollowUpModal = (lead: LeadRoger) => {
+    setSelectedFollowUpLead(lead);
+    setFollowUpModalOpen(true);
   };
 
   if (error) {
@@ -566,8 +574,9 @@ const CRMDashboardReal: React.FC = () => {
                               variant="outline" 
                               onClick={e => {
                                 e.stopPropagation();
-                                // Chat functionality can be implemented later
+                                openFollowUpModal(lead);
                               }}
+                              title="Configurar Follow-up"
                             >
                               <MessageCircle className="h-4 w-4" />
                             </Button>
@@ -769,6 +778,16 @@ const CRMDashboardReal: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Follow-up Modal */}
+      <FollowUpModal
+        isOpen={followUpModalOpen}
+        onClose={() => {
+          setFollowUpModalOpen(false);
+          setSelectedFollowUpLead(null);
+        }}
+        lead={selectedFollowUpLead}
+      />
     </div>
   );
 };
