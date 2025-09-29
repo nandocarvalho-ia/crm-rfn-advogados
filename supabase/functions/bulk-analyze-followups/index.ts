@@ -91,10 +91,11 @@ serve(async (req) => {
           processed++;
           console.log(`Lead ${lead.telefone} processado com sucesso`);
           return { telefone: lead.telefone, success: true, result };
-        } catch (error) {
-          console.error(`Erro ao processar lead ${lead.telefone}:`, error);
+        } catch (err) {
+          console.error(`Erro ao processar lead ${lead.telefone}:`, err);
           errors++;
-          return { telefone: lead.telefone, success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
+          const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+          return { telefone: lead.telefone, success: false, error: errorMessage };
         }
       });
 
@@ -120,11 +121,12 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
-    console.error('Erro no processamento em lote:', error);
+  } catch (err) {
+    console.error('Erro no processamento em lote:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error instanceof Error ? error.message : 'Erro desconhecido'
+      error: errorMessage
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
