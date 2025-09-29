@@ -18,33 +18,52 @@ serve(async (req) => {
   try {
     const { telefone, nomeLeads } = await req.json();
     
+    console.log('Analisando follow-up para telefone:', telefone);
+    
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Buscar histórico de conversas
+    // Buscar histórico de conversas usando session_id correto
+    const sessionId = `${telefone}roger`;
+    console.log('Buscando session_id:', sessionId);
+    
     const { data: historico, error: historicoError } = await supabase
       .from('n8n_chat_histories_roger')
       .select('*')
-      .eq('session_id', `${telefone}roger`)
+      .eq('session_id', sessionId)
       .order('id', { ascending: false })
       .limit(20);
 
-    if (historicoError) throw historicoError;
+    if (historicoError) {
+      console.error('Erro ao buscar histórico:', historicoError);
+      throw historicoError;
+    }
+
+    console.log('Histórico encontrado:', historico?.length || 0, 'mensagens');
 
     // Buscar dados do lead
     const { data: leadData, error: leadError } = await supabase
       .from('leads_roger')
       .select('*')
       .eq('telefone', telefone)
-      .single();
+      .maybeSingle();
 
-    if (leadError) throw leadError;
+    if (leadError) {
+      console.error('Erro ao buscar lead:', leadError);
+      throw leadError;
+    }
+
+    if (!leadData) {
+      throw new Error(`Lead não encontrado para telefone: ${telefone}`);
+    }
+
+    console.log('Lead encontrado:', leadData.nome_lead);
 
     // Buscar configuração de atendimento
     const { data: atendimentoData } = await supabase
       .from('[FLUXO] • IA')
       .select('*')
       .eq('"TELEFONE"', telefone)
-      .single();
+      .maybeSingle();
 
     // Analisar situação com IA
     const conversaResumo = historico?.slice(0, 10).map(msg => {
@@ -57,9 +76,10 @@ serve(async (req) => {
 Analise esta conversa de WhatsApp com um lead e determine a situação atual para sugestões de follow-up:
 
 DADOS DO LEAD:
-- Nome: ${leadData?.nome_lead || 'Não informado'}
-- Status: ${leadData?.status_qualificacao || 'Não informado'}  
-- Categoria: ${leadData?.categoria_lead || 'Não informado'}
+- Nome: ${leadData.nome_lead || 'Não informado'}
+- Status: ${leadData.status_qualificacao || 'Não informado'}  
+- Categoria: ${leadData.categoria_lead || 'Não informado'}
+- Última interação: ${leadData.updated_at || 'Não informado'}
 - Atendimento: ${atendimentoData?.ATENDENTE || 'IA'}
 
 ÚLTIMAS MENSAGENS:
@@ -103,20 +123,40 @@ Retorne apenas um JSON com:
     });
 
     if (!response.ok) {
-      throw new Error(`AI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('AI API error:', response.status, errorText);
+      throw new Error(`AI API error: ${response.status} - ${errorText}`);
     }
 
     const aiResponse = await response.json();
-    const analise = JSON.parse(aiResponse.choices[0].message.content);
+    console.log('Resposta da IA:', aiResponse.choices[0].message.content);
+    
+    let analise;
+    try {
+      // Limpar a resposta da IA removendo markdown se houver
+      let content = aiResponse.choices[0].message.content.trim();
+      if (content.startsWith('```json')) {
+        content = content.replace(/```json\n?/, '').replace(/\n?```$/, '');
+      }
+      if (content.startsWith('```')) {
+        content = content.replace(/```\n?/, '').replace(/\n?```$/, '');
+      }
+      analise = JSON.parse(content);
+    } catch (parseError) {
+      console.error('Erro ao fazer parse da resposta da IA:', parseError);
+      console.error('Conteúdo recebido:', aiResponse.choices[0].message.content);
+      const errorMessage = parseError instanceof Error ? parseError.message : 'Erro de parsing desconhecido';
+      throw new Error(`Erro ao processar resposta da IA: ${errorMessage}`);
+    }
 
     // Salvar ou atualizar follow-up na base
     const followUpData = {
       telefone,
-      nome_lead: leadData?.nome_lead,
+      nome_lead: leadData.nome_lead,
       tipo_situacao: analise.situacao,
       contexto_conversa: conversaResumo.slice(0, 1000),
       sugestoes_ia: analise,
-      ultima_resposta_lead: new Date().toISOString(),
+      ultima_resposta_lead: leadData.updated_at || new Date().toISOString(),
     };
 
     const { data: followUpResult, error: followUpError } = await supabase

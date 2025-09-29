@@ -55,6 +55,14 @@ export const FollowUpModal: React.FC<FollowUpModalProps> = ({
     }
   }, [followUpData, calculateSendDates]);
 
+  // Auto-análise quando modal abre e não há dados existentes
+  useEffect(() => {
+    if (isOpen && lead && !followUpData && !isAnalyzing && !isLoading) {
+      console.log('Iniciando análise automática para:', lead.telefone);
+      analyzeConversation(lead.telefone, lead.nome_lead || 'Lead');
+    }
+  }, [isOpen, lead, followUpData, isAnalyzing, isLoading, analyzeConversation]);
+
   const handleAnalyze = async () => {
     if (!lead?.telefone || !lead?.nome_lead) return;
     
@@ -144,13 +152,28 @@ export const FollowUpModal: React.FC<FollowUpModalProps> = ({
               <Label className="text-sm font-medium text-gray-600">Situação</Label>
               {followUpData?.tipo_situacao ? getSituationBadge(followUpData.tipo_situacao) : '-'}
             </div>
+            {followUpData?.ultima_resposta_lead && (
+              <div className="col-span-2">
+                <Label className="text-sm font-medium text-gray-600">Última Interação</Label>
+                <p className="text-sm">{new Date(followUpData.ultima_resposta_lead).toLocaleString('pt-BR')}</p>
+              </div>
+            )}
           </div>
+
+          {/* Status da Análise */}
+          {isAnalyzing && (
+            <div className="flex items-center gap-2 p-4 bg-blue-50 rounded-lg">
+              <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+              <span className="text-sm text-blue-700">Analisando conversa e gerando sugestões...</span>
+            </div>
+          )}
 
           {/* Botões de Ação */}
           <div className="flex gap-2">
             <Button 
               onClick={handleAnalyze}
               disabled={isAnalyzing}
+              variant="outline"
               className="flex items-center gap-2"
             >
               {isAnalyzing ? (
@@ -158,7 +181,7 @@ export const FollowUpModal: React.FC<FollowUpModalProps> = ({
               ) : (
                 <MessageCircle className="h-4 w-4" />
               )}
-              {isAnalyzing ? 'Analisando...' : 'Analisar Conversa'}
+              {isAnalyzing ? 'Analisando...' : 'Re-analisar'}
             </Button>
 
             {followUpData && (
@@ -291,20 +314,20 @@ export const FollowUpModal: React.FC<FollowUpModalProps> = ({
           )}
 
           {/* Estado vazio */}
-          {!followUpData && !isLoading && (
+          {!followUpData && !isLoading && !isAnalyzing && (
             <div className="text-center py-8">
               <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Nenhum follow-up configurado
+                Aguardando análise...
               </h3>
               <p className="text-gray-500">
-                Clique em "Analisar Conversa" para gerar sugestões inteligentes de follow-up
+                A análise será iniciada automaticamente
               </p>
             </div>
           )}
 
           {/* Loading */}
-          {isLoading && (
+          {(isLoading || (isOpen && !followUpData && !isAnalyzing)) && (
             <div className="text-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">Carregando dados do follow-up...</p>
