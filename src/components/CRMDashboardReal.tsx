@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2, CalendarIcon } from 'lucide-react';
-import { format, subDays, subHours, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays, subHours, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useLeadsRoger, LeadRoger } from '@/hooks/useLeadsRoger';
 import { useIABlockControl } from '@/hooks/useIABlockControl';
@@ -136,15 +136,33 @@ const CRMDashboardReal: React.FC = () => {
     if (!leads) return [];
     return leads.filter(lead => {
       const matchesSearch = (lead.nome_lead || '').toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'Todos' || lead.status_lead === statusFilter.toUpperCase();
-      const matchesCategory = categoryFilter === 'Todas' || lead.categoria_lead === categoryFilter.replace(' ', '_').toUpperCase();
       
-      // Date filter logic
+      // Status filter - use exact lowercase values from database
+      const matchesStatus = statusFilter === 'Todos' || lead.status_lead === statusFilter.toLowerCase();
+      
+      // Category filter - use exact database values
+      let matchesCategory = true;
+      if (categoryFilter !== 'Todas') {
+        const categoryMap: Record<string, string> = {
+          'Premium Atraso': 'PREMIUM_ATRASO',
+          'Premium Tempo': 'PREMIUM_TEMPO', 
+          'A Excelente': 'A_EXCELENTE',
+          'B Muito Bom': 'B_MUITO_BOM',
+          'C Bom': 'C_BOM',
+          'D Regular': 'D_REGULAR',
+          'E Baixo': 'E_BAIXO',
+          'Desqualificado': 'DESQUALIFICADO'
+        };
+        const dbCategoryValue = categoryMap[categoryFilter];
+        matchesCategory = lead.categoria_lead === dbCategoryValue;
+      }
+      
+      // Date filter logic - use isWithinInterval for inclusive dates
       const dateRange = getDateFilterRange();
       let matchesDate = true;
       if (dateRange) {
         const leadDate = new Date(lead.created_at);
-        matchesDate = isAfter(leadDate, dateRange.from) && isBefore(leadDate, dateRange.to);
+        matchesDate = isWithinInterval(leadDate, { start: dateRange.from, end: dateRange.to });
       }
       
       return matchesSearch && matchesStatus && matchesCategory && matchesDate;
@@ -290,9 +308,12 @@ const CRMDashboardReal: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Todos">Todos</SelectItem>
-                      <SelectItem value="Novo">Novo</SelectItem>
-                      <SelectItem value="Conversando">Conversando</SelectItem>
-                      <SelectItem value="Convertido">Convertido</SelectItem>
+                      <SelectItem value="novo">Novo</SelectItem>
+                      <SelectItem value="conversando">Conversando</SelectItem>
+                      <SelectItem value="convertido">Convertido</SelectItem>
+                      <SelectItem value="qualificando">Qualificando</SelectItem>
+                      <SelectItem value="qualificado">Qualificado</SelectItem>
+                      <SelectItem value="desqualificado">Desqualificado</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -305,11 +326,13 @@ const CRMDashboardReal: React.FC = () => {
                     <SelectContent>
                       <SelectItem value="Todas">Todas</SelectItem>
                       <SelectItem value="Premium Atraso">Premium Atraso</SelectItem>
+                      <SelectItem value="Premium Tempo">Premium Tempo</SelectItem>
                       <SelectItem value="A Excelente">A Excelente</SelectItem>
                       <SelectItem value="B Muito Bom">B Muito Bom</SelectItem>
                       <SelectItem value="C Bom">C Bom</SelectItem>
                       <SelectItem value="D Regular">D Regular</SelectItem>
                       <SelectItem value="E Baixo">E Baixo</SelectItem>
+                      <SelectItem value="Desqualificado">Desqualificado</SelectItem>
                     </SelectContent>
                   </Select>
 
