@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.bulk-analyze-followups]
 verify_jwt = false
+
+[functions.send-scheduled-followups]
+verify_jwt = false

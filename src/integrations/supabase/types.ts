@@ -390,49 +390,70 @@ export type Database = {
           configuracao_personalizada: Json | null
           contexto_conversa: string | null
           created_at: string | null
+          data_envio_real: string | null
+          horario_comercial_fim: string | null
+          horario_comercial_inicio: string | null
           id: string
+          log_envio: Json | null
           nome_lead: string | null
           proximo_followup_1: Json | null
           proximo_followup_2: Json | null
           proximo_followup_3: Json | null
           status: string | null
+          status_envio: string | null
           sugestoes_ia: Json | null
           telefone: string
+          tentativas_envio: number | null
           tipo_situacao: string
           ultima_resposta_lead: string | null
           updated_at: string | null
+          webhook_n8n_url: string | null
         }
         Insert: {
           configuracao_personalizada?: Json | null
           contexto_conversa?: string | null
           created_at?: string | null
+          data_envio_real?: string | null
+          horario_comercial_fim?: string | null
+          horario_comercial_inicio?: string | null
           id?: string
+          log_envio?: Json | null
           nome_lead?: string | null
           proximo_followup_1?: Json | null
           proximo_followup_2?: Json | null
           proximo_followup_3?: Json | null
           status?: string | null
+          status_envio?: string | null
           sugestoes_ia?: Json | null
           telefone: string
+          tentativas_envio?: number | null
           tipo_situacao: string
           ultima_resposta_lead?: string | null
           updated_at?: string | null
+          webhook_n8n_url?: string | null
         }
         Update: {
           configuracao_personalizada?: Json | null
           contexto_conversa?: string | null
           created_at?: string | null
+          data_envio_real?: string | null
+          horario_comercial_fim?: string | null
+          horario_comercial_inicio?: string | null
           id?: string
+          log_envio?: Json | null
           nome_lead?: string | null
           proximo_followup_1?: Json | null
           proximo_followup_2?: Json | null
           proximo_followup_3?: Json | null
           status?: string | null
+          status_envio?: string | null
           sugestoes_ia?: Json | null
           telefone?: string
+          tentativas_envio?: number | null
           tipo_situacao?: string
           ultima_resposta_lead?: string | null
           updated_at?: string | null
+          webhook_n8n_url?: string | null
         }
         Relationships: []
       }
@@ -1416,6 +1437,10 @@ export type Database = {
       hnswhandler: {
         Args: { "": unknown }
         Returns: unknown
+      }
+      is_business_hours: {
+        Args: { fim?: string; inicio?: string }
+        Returns: boolean
       }
       ivfflat_bit_support: {
         Args: { "": unknown }
