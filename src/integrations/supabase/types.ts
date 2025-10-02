@@ -550,7 +550,112 @@ export type Database = {
         }
         Relationships: []
       }
-      leads: {
+      leads_roger: {
+        Row: {
+          categoria_lead: string | null
+          cobranca_judicial: string | null
+          created_at: string | null
+          data_compra: string | null
+          email: string | null
+          estado: string | null
+          followup_1: string | null
+          followup_2: string | null
+          followup_3: string | null
+          id: string
+          instancia: string | null
+          motivo_cancelamento: string | null
+          motivo_desqualificacao: string | null
+          nome_lead: string | null
+          potencial_recuperacao: string | null
+          prioridade_atendimento: string | null
+          proposta_recomendada: string | null
+          qualificado_automaticamente: string | null
+          resumo_ia: string | null
+          score_total: string | null
+          situacao_parcelas: string | null
+          status_imovel: string | null
+          status_lead: string | null
+          status_qualificacao: string | null
+          telefone: string
+          tem_construcao: string | null
+          tempo_pagando_meses: string | null
+          tipo_caso: string | null
+          tipo_financiamento: string | null
+          updated_at: string | null
+          valor_estimado_recuperacao: string | null
+          valor_pago: number | null
+        }
+        Insert: {
+          categoria_lead?: string | null
+          cobranca_judicial?: string | null
+          created_at?: string | null
+          data_compra?: string | null
+          email?: string | null
+          estado?: string | null
+          followup_1?: string | null
+          followup_2?: string | null
+          followup_3?: string | null
+          id?: string
+          instancia?: string | null
+          motivo_cancelamento?: string | null
+          motivo_desqualificacao?: string | null
+          nome_lead?: string | null
+          potencial_recuperacao?: string | null
+          prioridade_atendimento?: string | null
+          proposta_recomendada?: string | null
+          qualificado_automaticamente?: string | null
+          resumo_ia?: string | null
+          score_total?: string | null
+          situacao_parcelas?: string | null
+          status_imovel?: string | null
+          status_lead?: string | null
+          status_qualificacao?: string | null
+          telefone: string
+          tem_construcao?: string | null
+          tempo_pagando_meses?: string | null
+          tipo_caso?: string | null
+          tipo_financiamento?: string | null
+          updated_at?: string | null
+          valor_estimado_recuperacao?: string | null
+          valor_pago?: number | null
+        }
+        Update: {
+          categoria_lead?: string | null
+          cobranca_judicial?: string | null
+          created_at?: string | null
+          data_compra?: string | null
+          email?: string | null
+          estado?: string | null
+          followup_1?: string | null
+          followup_2?: string | null
+          followup_3?: string | null
+          id?: string
+          instancia?: string | null
+          motivo_cancelamento?: string | null
+          motivo_desqualificacao?: string | null
+          nome_lead?: string | null
+          potencial_recuperacao?: string | null
+          prioridade_atendimento?: string | null
+          proposta_recomendada?: string | null
+          qualificado_automaticamente?: string | null
+          resumo_ia?: string | null
+          score_total?: string | null
+          situacao_parcelas?: string | null
+          status_imovel?: string | null
+          status_lead?: string | null
+          status_qualificacao?: string | null
+          telefone?: string
+          tem_construcao?: string | null
+          tempo_pagando_meses?: string | null
+          tipo_caso?: string | null
+          tipo_financiamento?: string | null
+          updated_at?: string | null
+          valor_estimado_recuperacao?: string | null
+          valor_pago?: number | null
+        }
+        Relationships: []
+      }
+      leads_viam: {
         Row: {
           ad_id: string | null
           adset_id: string | null
@@ -726,102 +831,6 @@ export type Database = {
             referencedColumns: ["campaign_id"]
           },
         ]
-      }
-      leads_roger: {
-        Row: {
-          categoria_lead: string | null
-          cobranca_judicial: string | null
-          created_at: string | null
-          data_compra: string | null
-          email: string | null
-          estado: string | null
-          id: string
-          motivo_cancelamento: string | null
-          motivo_desqualificacao: string | null
-          nome_lead: string | null
-          observacoes: string | null
-          potencial_recuperacao: string | null
-          prioridade_atendimento: string | null
-          proposta_recomendada: string | null
-          qualificado_automaticamente: string | null
-          resumo_ia: string | null
-          score_total: string | null
-          situacao_parcelas: string | null
-          status_imovel: string | null
-          status_lead: string | null
-          status_qualificacao: string | null
-          telefone: string
-          tem_construcao: string | null
-          tempo_pagando_meses: string | null
-          tipo_caso: string | null
-          tipo_financiamento: string | null
-          updated_at: string | null
-          valor_estimado_recuperacao: string | null
-          valor_pago: number | null
-        }
-        Insert: {
-          categoria_lead?: string | null
-          cobranca_judicial?: string | null
-          created_at?: string | null
-          data_compra?: string | null
-          email?: string | null
-          estado?: string | null
-          id?: string
-          motivo_cancelamento?: string | null
-          motivo_desqualificacao?: string | null
-          nome_lead?: string | null
-          observacoes?: string | null
-          potencial_recuperacao?: string | null
-          prioridade_atendimento?: string | null
-          proposta_recomendada?: string | null
-          qualificado_automaticamente?: string | null
-          resumo_ia?: string | null
-          score_total?: string | null
-          situacao_parcelas?: string | null
-          status_imovel?: string | null
-          status_lead?: string | null
-          status_qualificacao?: string | null
-          telefone: string
-          tem_construcao?: string | null
-          tempo_pagando_meses?: string | null
-          tipo_caso?: string | null
-          tipo_financiamento?: string | null
-          updated_at?: string | null
-          valor_estimado_recuperacao?: string | null
-          valor_pago?: number | null
-        }
-        Update: {
-          categoria_lead?: string | null
-          cobranca_judicial?: string | null
-          created_at?: string | null
-          data_compra?: string | null
-          email?: string | null
-          estado?: string | null
-          id?: string
-          motivo_cancelamento?: string | null
-          motivo_desqualificacao?: string | null
-          nome_lead?: string | null
-          observacoes?: string | null
-          potencial_recuperacao?: string | null
-          prioridade_atendimento?: string | null
-          proposta_recomendada?: string | null
-          qualificado_automaticamente?: string | null
-          resumo_ia?: string | null
-          score_total?: string | null
-          situacao_parcelas?: string | null
-          status_imovel?: string | null
-          status_lead?: string | null
-          status_qualificacao?: string | null
-          telefone?: string
-          tem_construcao?: string | null
-          tempo_pagando_meses?: string | null
-          tipo_caso?: string | null
-          tipo_financiamento?: string | null
-          updated_at?: string | null
-          valor_estimado_recuperacao?: string | null
-          valor_pago?: number | null
-        }
-        Relationships: []
       }
       mensagens_followup: {
         Row: {
@@ -1096,6 +1105,45 @@ export type Database = {
           id?: string
           metadata?: Json | null
           text?: string | null
+        }
+        Relationships: []
+      }
+      prompt_roger: {
+        Row: {
+          created_at: string | null
+          identidade: string
+          objecoes: string
+          regra_fundamental: string
+          regras_finais: string
+          script: string
+          tipo: string
+          tools: string
+          transferencia: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          identidade: string
+          objecoes: string
+          regra_fundamental: string
+          regras_finais: string
+          script: string
+          tipo: string
+          tools: string
+          transferencia: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          identidade?: string
+          objecoes?: string
+          regra_fundamental?: string
+          regras_finais?: string
+          script?: string
+          tipo?: string
+          tools?: string
+          transferencia?: string
+          updated_at?: string | null
         }
         Relationships: []
       }

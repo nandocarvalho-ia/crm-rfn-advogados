@@ -6,26 +6,27 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+interface FollowUpSuggestion {
+  texto: string;
+  data_envio?: string;
+  status?: 'pendente' | 'enviado' | 'cancelado' | 'erro';
+  horario_comercial?: boolean;
+  tentativa?: number;
+}
+
 interface FollowUpRecord {
   id: string;
   telefone: string;
   nome_lead: string;
-  sugestoes_ia: any;
+  proximo_followup_1?: FollowUpSuggestion | null;
+  proximo_followup_2?: FollowUpSuggestion | null;
+  proximo_followup_3?: FollowUpSuggestion | null;
   status_envio: string;
   tentativas_envio: number;
   webhook_n8n_url?: string;
   horario_comercial_inicio: string;
   horario_comercial_fim: string;
   log_envio: any[];
-}
-
-interface FollowUpSuggestion {
-  ordem: number;
-  tempo_espera: string;
-  texto: string;
-  horario_comercial: boolean;
-  data_envio?: string;
-  status?: 'pendente' | 'enviado' | 'cancelado';
 }
 
 serve(async (req) => {
@@ -67,13 +68,12 @@ serve(async (req) => {
       });
     }
 
-    // Buscar follow-ups pendentes que já passaram da data de envio
+    // Buscar follow-ups pendentes
     const { data: followUps, error } = await supabase
       .from('follow_ups_inteligentes')
       .select('*')
-      .eq('status_envio', 'pendente')
-      .not('sugestoes_ia', 'is', null)
-      .lt('updated_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // Pelo menos 5 min desde última atualização
+      .eq('status', 'ativo')
+      .in('status_envio', ['pendente', 'erro'])
       .limit(10); // Processar no máximo 10 por vez
 
     if (error) {
@@ -107,31 +107,39 @@ serve(async (req) => {
       try {
         console.log(`Processando follow-up para ${followUp.telefone} (${followUp.nome_lead})`);
 
-        // Verificar se tem sugestões de follow-up
-        const sugestoes = followUp.sugestoes_ia?.followups as FollowUpSuggestion[];
-        if (!sugestoes || sugestoes.length === 0) {
-          console.log(`Sem sugestões para ${followUp.telefone}`);
-          continue;
-        }
-
-        // Encontrar primeira sugestão pendente que já passou do tempo
+        // Determinar qual follow-up enviar (1, 2 ou 3)
         const agora = new Date();
         let mensagemParaEnviar: FollowUpSuggestion | null = null;
+        let numeroFollowUp = 0;
 
-        for (const sugestao of sugestoes) {
-          if (sugestao.status === 'pendente' && sugestao.data_envio) {
-            const dataEnvio = new Date(sugestao.data_envio);
-            if (dataEnvio <= agora) {
-              mensagemParaEnviar = sugestao;
-              break;
-            }
-          }
+        // Verificar follow-up 1
+        if (followUp.proximo_followup_1?.status === 'pendente' && 
+            followUp.proximo_followup_1?.data_envio &&
+            new Date(followUp.proximo_followup_1.data_envio) <= agora) {
+          mensagemParaEnviar = followUp.proximo_followup_1;
+          numeroFollowUp = 1;
+        }
+        // Verificar follow-up 2 (só se 1 foi enviado)
+        else if (followUp.proximo_followup_2?.status === 'pendente' && 
+                 followUp.proximo_followup_2?.data_envio &&
+                 new Date(followUp.proximo_followup_2.data_envio) <= agora) {
+          mensagemParaEnviar = followUp.proximo_followup_2;
+          numeroFollowUp = 2;
+        }
+        // Verificar follow-up 3 (só se 2 foi enviado)
+        else if (followUp.proximo_followup_3?.status === 'pendente' && 
+                 followUp.proximo_followup_3?.data_envio &&
+                 new Date(followUp.proximo_followup_3.data_envio) <= agora) {
+          mensagemParaEnviar = followUp.proximo_followup_3;
+          numeroFollowUp = 3;
         }
 
         if (!mensagemParaEnviar) {
           console.log(`Nenhuma mensagem pronta para envio para ${followUp.telefone}`);
           continue;
         }
+
+        console.log(`Enviando follow-up ${numeroFollowUp}`);
 
         // URL do webhook N8N (usar o configurado no follow-up ou um padrão)
         const webhookUrl = followUp.webhook_n8n_url || Deno.env.get('N8N_WEBHOOK_URL');
@@ -144,7 +152,7 @@ serve(async (req) => {
             ...followUp.log_envio,
             {
               timestamp: new Date().toISOString(),
-              ordem: mensagemParaEnviar.ordem,
+              numero_followup: numeroFollowUp,
               erro: 'Webhook URL não configurado',
               status: 'erro'
             }
@@ -168,7 +176,7 @@ serve(async (req) => {
           telefone: followUp.telefone,
           nome_lead: followUp.nome_lead,
           mensagem: mensagemParaEnviar.texto,
-          ordem_followup: mensagemParaEnviar.ordem,
+          numero_followup: numeroFollowUp,
           followup_id: followUp.id,
           timestamp: new Date().toISOString()
         };
@@ -189,38 +197,46 @@ serve(async (req) => {
         if (webhookResponse.ok) {
           console.log(`Webhook enviado com sucesso para ${followUp.telefone}`);
 
-          // Atualizar status da sugestão para 'enviado'
-          const sugestoesAtualizadas = sugestoes.map(s => 
-            s.ordem === mensagemParaEnviar!.ordem 
-              ? { ...s, status: 'enviado' as const }
-              : s
-          );
+          // Preparar update do campo específico
+          const updateData: any = {
+            data_envio_real: new Date().toISOString(),
+            tentativas_envio: followUp.tentativas_envio + 1,
+            log_envio: [
+              ...followUp.log_envio,
+              {
+                timestamp: new Date().toISOString(),
+                numero_followup: numeroFollowUp,
+                status: 'enviado',
+                webhook_response: responseText,
+                tentativa: followUp.tentativas_envio + 1
+              }
+            ],
+            updated_at: new Date().toISOString()
+          };
 
-          // Atualizar follow-up no banco
-          const novoLog = [
-            ...followUp.log_envio,
-            {
-              timestamp: new Date().toISOString(),
-              ordem: mensagemParaEnviar.ordem,
-              status: 'enviado',
-              webhook_response: responseText,
-              tentativa: followUp.tentativas_envio + 1
-            }
-          ];
+          // Atualizar o campo específico do follow-up
+          const fieldName = `proximo_followup_${numeroFollowUp}`;
+          updateData[fieldName] = {
+            ...mensagemParaEnviar,
+            status: 'enviado',
+            tentativa: (mensagemParaEnviar.tentativa || 0) + 1
+          };
+
+          // Verificar se todos foram enviados
+          const f1Status = numeroFollowUp === 1 ? 'enviado' : (followUp.proximo_followup_1?.status || null);
+          const f2Status = numeroFollowUp === 2 ? 'enviado' : (followUp.proximo_followup_2?.status || null);
+          const f3Status = numeroFollowUp === 3 ? 'enviado' : (followUp.proximo_followup_3?.status || null);
+
+          const allSent = 
+            (!followUp.proximo_followup_1 || f1Status === 'enviado') &&
+            (!followUp.proximo_followup_2 || f2Status === 'enviado') &&
+            (!followUp.proximo_followup_3 || f3Status === 'enviado');
+
+          updateData.status_envio = allSent ? 'finalizado' : 'enviado';
 
           await supabase
             .from('follow_ups_inteligentes')
-            .update({
-              sugestoes_ia: {
-                ...followUp.sugestoes_ia,
-                followups: sugestoesAtualizadas
-              },
-              status_envio: 'enviado',
-              data_envio_real: new Date().toISOString(),
-              tentativas_envio: followUp.tentativas_envio + 1,
-              log_envio: novoLog,
-              updated_at: new Date().toISOString()
-            })
+            .update(updateData)
             .eq('id', followUp.id);
 
           processed++;
@@ -232,7 +248,7 @@ serve(async (req) => {
             ...followUp.log_envio,
             {
               timestamp: new Date().toISOString(),
-              ordem: mensagemParaEnviar.ordem,
+              numero_followup: numeroFollowUp,
               erro: `Webhook falhou: ${webhookResponse.status} - ${responseText}`,
               tentativa: followUp.tentativas_envio + 1,
               status: 'erro'
