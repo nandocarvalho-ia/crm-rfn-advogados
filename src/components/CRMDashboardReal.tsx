@@ -226,13 +226,6 @@ const CRMDashboardReal: React.FC = () => {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={populateExistingLeads}
-              >
-                Popular Follow-ups
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
                 onClick={updateAllLeads}
               >
                 Atualizar Todos
