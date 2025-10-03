@@ -48,12 +48,43 @@ export const FollowUpModal: React.FC<FollowUpModalProps> = ({
   const [followUps, setFollowUps] = useState<FollowUpSuggestion[]>([]);
 
   useEffect(() => {
-    if (followUpData?.sugestoes_ia?.followups) {
-      const suggestedFollowUps = followUpData.sugestoes_ia.followups;
-      const withDates = calculateSendDates(suggestedFollowUps);
-      setFollowUps(withDates);
+    if (followUpData) {
+      // Mapear os follow-ups da tabela leads_roger para o formato esperado
+      const mappedFollowUps: FollowUpSuggestion[] = [];
+      
+      if (followUpData.followup_1) {
+        mappedFollowUps.push({
+          ordem: 1,
+          texto: followUpData.followup_1,
+          tempo_espera: '24 horas',
+          horario_comercial: true,
+          status: 'pendente',
+        });
+      }
+      
+      if (followUpData.followup_2) {
+        mappedFollowUps.push({
+          ordem: 2,
+          texto: followUpData.followup_2,
+          tempo_espera: '48 horas',
+          horario_comercial: true,
+          status: 'pendente',
+        });
+      }
+      
+      if (followUpData.followup_3) {
+        mappedFollowUps.push({
+          ordem: 3,
+          texto: followUpData.followup_3,
+          tempo_espera: '72 horas',
+          horario_comercial: true,
+          status: 'pendente',
+        });
+      }
+      
+      setFollowUps(mappedFollowUps);
     }
-  }, [followUpData, calculateSendDates]);
+  }, [followUpData]);
 
   // Auto-análise quando modal abre e não há dados existentes
   useEffect(() => {
@@ -148,14 +179,10 @@ export const FollowUpModal: React.FC<FollowUpModalProps> = ({
               <Label className="text-sm font-medium text-gray-600">Categoria</Label>
               <p className="text-sm">{lead.categoria_lead}</p>
             </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-600">Situação</Label>
-              {followUpData?.tipo_situacao ? getSituationBadge(followUpData.tipo_situacao) : '-'}
-            </div>
-            {followUpData?.ultima_resposta_lead && (
+            {followUpData?.resumo_ia && (
               <div className="col-span-2">
-                <Label className="text-sm font-medium text-gray-600">Última Interação</Label>
-                <p className="text-sm">{new Date(followUpData.ultima_resposta_lead).toLocaleString('pt-BR')}</p>
+                <Label className="text-sm font-medium text-gray-600">Resumo IA</Label>
+                <p className="text-sm">{followUpData.resumo_ia}</p>
               </div>
             )}
           </div>
@@ -184,54 +211,16 @@ export const FollowUpModal: React.FC<FollowUpModalProps> = ({
               {isAnalyzing ? 'Analisando...' : 'Re-analisar'}
             </Button>
 
-            {followUpData && (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => toggleFollowUpStatus(
-                    followUpData.status === 'ativo' ? 'pausado' : 'ativo'
-                  )}
-                  disabled={isUpdating}
-                  className="flex items-center gap-2"
-                >
-                  {followUpData.status === 'ativo' ? (
-                    <Pause className="h-4 w-4" />
-                  ) : (
-                    <Play className="h-4 w-4" />
-                  )}
-                  {followUpData.status === 'ativo' ? 'Pausar' : 'Ativar'}
-                </Button>
-
-                <Button
-                  variant="destructive"
-                  onClick={() => toggleFollowUpStatus('finalizado')}
-                  disabled={isUpdating}
-                  className="flex items-center gap-2"
-                >
-                  <Square className="h-4 w-4" />
-                  Finalizar
-                </Button>
-              </div>
-            )}
           </div>
 
-          {/* Contexto da Conversa */}
-          {followUpData?.contexto_conversa && (
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <Label className="text-sm font-medium text-blue-800">Contexto da Conversa</Label>
-              <p className="text-sm text-blue-700 mt-1">
-                {followUpData.sugestoes_ia?.contexto || 'Analisando contexto...'}
-              </p>
-            </div>
-          )}
 
           {/* Lista de Follow-ups */}
           {followUps.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Follow-ups Programados</h3>
-                <Badge variant={followUpData?.status === 'ativo' ? 'default' : 'secondary'}>
-                  {followUpData?.status === 'ativo' ? 'Ativo' : followUpData?.status}
+                <h3 className="text-lg font-semibold">Follow-ups Cadastrados</h3>
+                <Badge variant="default">
+                  {lead.status_qualificacao}
                 </Badge>
               </div>
 

@@ -9,20 +9,35 @@ export const useFollowUpManager = (telefone?: string) => {
   const queryClient = useQueryClient();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Buscar follow-up existente
+  // Buscar follow-up diretamente da tabela leads_roger
   const { data: followUpData, isLoading } = useQuery({
     queryKey: ['follow-up', telefone],
     queryFn: async () => {
       if (!telefone) return null;
       
       const { data, error } = await supabase
-        .from('follow_ups_inteligentes')
+        .from('leads_roger')
         .select('*')
         .eq('telefone', telefone)
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      return data as any;
+      
+      // Transformar os dados para o formato esperado
+      if (data) {
+        return {
+          telefone: data.telefone,
+          nome_lead: data.nome_lead,
+          followup_1: data.followup_1,
+          followup_2: data.followup_2,
+          followup_3: data.followup_3,
+          status_qualificacao: data.status_qualificacao,
+          categoria_lead: data.categoria_lead,
+          resumo_ia: data.resumo_ia,
+        };
+      }
+      
+      return null;
     },
     enabled: !!telefone,
   });
@@ -62,13 +77,13 @@ export const useFollowUpManager = (telefone?: string) => {
     }
   };
 
-  // Atualizar follow-ups
+  // Atualizar follow-ups diretamente na tabela leads_roger
   const updateFollowUpMutation = useMutation({
     mutationFn: async (updates: any) => {
       if (!telefone) throw new Error('Telefone não informado');
 
       const { data, error } = await supabase
-        .from('follow_ups_inteligentes')
+        .from('leads_roger')
         .update(updates)
         .eq('telefone', telefone)
         .select()
