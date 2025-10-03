@@ -33,6 +33,8 @@ const getCategoryStyle = (category: string | null) => {
       return 'bg-crm-primary/40 text-crm-primary';
     case 'E_BAIXO':
       return 'bg-crm-secondary text-crm-primary';
+    case 'DESQUALIFICADO':
+      return 'bg-crm-secondary/60 text-crm-primary';
     default:
       return 'bg-crm-secondary/80 text-crm-primary';
   }

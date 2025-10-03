@@ -18,7 +18,7 @@ export const useFollowUpManager = (telefone?: string) => {
       const { data, error } = await supabase
         .from('leads_roger')
         .select('*')
-        .eq('telefone', telefone)
+        .eq('telefone', parseInt(telefone))
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
@@ -85,7 +85,7 @@ export const useFollowUpManager = (telefone?: string) => {
       const { data, error } = await supabase
         .from('leads_roger')
         .update(updates)
-        .eq('telefone', telefone)
+        .eq('telefone', parseInt(telefone))
         .select()
         .single();
 

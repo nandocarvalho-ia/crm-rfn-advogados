@@ -567,22 +567,22 @@ export type Database = {
           motivo_desqualificacao: string | null
           nome_lead: string | null
           potencial_recuperacao: string | null
-          prioridade_atendimento: string | null
+          prioridade_atendimento: number | null
           proposta_recomendada: string | null
           qualificado_automaticamente: string | null
           resumo_ia: string | null
-          score_total: string | null
+          score_total: number | null
           situacao_parcelas: string | null
           status_imovel: string | null
           status_lead: string | null
           status_qualificacao: string | null
-          telefone: string
+          telefone: number
           tem_construcao: string | null
           tempo_pagando_meses: string | null
           tipo_caso: string | null
           tipo_financiamento: string | null
           updated_at: string | null
-          valor_estimado_recuperacao: string | null
+          valor_estimado_recuperacao: number | null
           valor_pago: number | null
         }
         Insert: {
@@ -601,22 +601,22 @@ export type Database = {
           motivo_desqualificacao?: string | null
           nome_lead?: string | null
           potencial_recuperacao?: string | null
-          prioridade_atendimento?: string | null
+          prioridade_atendimento?: number | null
           proposta_recomendada?: string | null
           qualificado_automaticamente?: string | null
           resumo_ia?: string | null
-          score_total?: string | null
+          score_total?: number | null
           situacao_parcelas?: string | null
           status_imovel?: string | null
           status_lead?: string | null
           status_qualificacao?: string | null
-          telefone: string
+          telefone: number
           tem_construcao?: string | null
           tempo_pagando_meses?: string | null
           tipo_caso?: string | null
           tipo_financiamento?: string | null
           updated_at?: string | null
-          valor_estimado_recuperacao?: string | null
+          valor_estimado_recuperacao?: number | null
           valor_pago?: number | null
         }
         Update: {
@@ -635,22 +635,22 @@ export type Database = {
           motivo_desqualificacao?: string | null
           nome_lead?: string | null
           potencial_recuperacao?: string | null
-          prioridade_atendimento?: string | null
+          prioridade_atendimento?: number | null
           proposta_recomendada?: string | null
           qualificado_automaticamente?: string | null
           resumo_ia?: string | null
-          score_total?: string | null
+          score_total?: number | null
           situacao_parcelas?: string | null
           status_imovel?: string | null
           status_lead?: string | null
           status_qualificacao?: string | null
-          telefone?: string
+          telefone?: number
           tem_construcao?: string | null
           tempo_pagando_meses?: string | null
           tipo_caso?: string | null
           tipo_financiamento?: string | null
           updated_at?: string | null
-          valor_estimado_recuperacao?: string | null
+          valor_estimado_recuperacao?: number | null
           valor_pago?: number | null
         }
         Relationships: []
