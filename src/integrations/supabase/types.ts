@@ -556,6 +556,7 @@ export type Database = {
           cobranca_judicial: string | null
           created_at: string | null
           data_compra: string | null
+          deleted_at: string | null
           email: string | null
           estado: string | null
           followup_1: string | null
@@ -590,6 +591,7 @@ export type Database = {
           cobranca_judicial?: string | null
           created_at?: string | null
           data_compra?: string | null
+          deleted_at?: string | null
           email?: string | null
           estado?: string | null
           followup_1?: string | null
@@ -624,6 +626,7 @@ export type Database = {
           cobranca_judicial?: string | null
           created_at?: string | null
           data_compra?: string | null
+          deleted_at?: string | null
           email?: string | null
           estado?: string | null
           followup_1?: string | null
@@ -974,6 +977,24 @@ export type Database = {
         Relationships: []
       }
       n8n_chat_histories_roger: {
+        Row: {
+          id: number
+          message: Json
+          session_id: string
+        }
+        Insert: {
+          id?: number
+          message: Json
+          session_id: string
+        }
+        Update: {
+          id?: number
+          message?: Json
+          session_id?: string
+        }
+        Relationships: []
+      }
+      n8n_chat_histories_roger_backup: {
         Row: {
           id: number
           message: Json

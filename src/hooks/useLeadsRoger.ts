@@ -44,6 +44,7 @@ export const useLeadsRoger = () => {
         supabase
           .from('leads_roger')
           .select('*')
+          .is('deleted_at', null)
           .order('created_at', { ascending: false }),
         supabase
           .from('[FLUXO] • IA')

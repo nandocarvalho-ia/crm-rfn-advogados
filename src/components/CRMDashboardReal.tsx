@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2, CalendarIcon, AlertCircle, UserPlus } from 'lucide-react';
+import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2, CalendarIcon, AlertCircle, UserPlus, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { format, subDays, subHours, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -29,6 +29,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const getCategoryStyle = (category: string | null) => {
   switch (category) {
@@ -140,6 +150,7 @@ const CRMDashboardReal: React.FC = () => {
   const [showLeadModal, setShowLeadModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -223,6 +234,33 @@ const CRMDashboardReal: React.FC = () => {
   });
   
   // Mutation para criar novo lead
+  const deleteLeadMutation = useMutation({
+    mutationFn: async (leadId: string) => {
+      const { error } = await supabase
+        .from('leads_roger')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', leadId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leads-roger'] });
+      toast({
+        title: "Lead excluído",
+        description: "O lead foi excluído com sucesso.",
+      });
+      setShowLeadModal(false);
+      setShowDeleteConfirm(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro ao excluir lead",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const createLeadMutation = useMutation({
     mutationFn: async (data: LeadCreateFormData) => {
       // Verificar se telefone já existe
@@ -836,36 +874,47 @@ const CRMDashboardReal: React.FC = () => {
       }}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-slate-900 border-slate-700">
           <DialogHeader className="flex flex-row items-center justify-between">
-            <DialogTitle className="text-xl font-bold text-slate-100">
+            <DialogTitle className="text-xl font-bold text-slate-100 flex-1">
               Detalhes do Lead
             </DialogTitle>
-            {!isEditing ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setIsEditing(true);
-                  if (selectedLead) {
-                    form.reset({
-                      nome_lead: selectedLead.nome_lead || '',
-                      email: selectedLead.email || '',
-                      estado: selectedLead.estado,
-                      categoria_lead: selectedLead.categoria_lead,
-                      status_lead: selectedLead.status_lead,
-                      tipo_caso: selectedLead.tipo_caso,
-                      tipo_financiamento: selectedLead.tipo_financiamento,
-                      status_imovel: selectedLead.status_imovel,
-                      valor_pago: selectedLead.valor_pago ? Number(selectedLead.valor_pago) : null,
-                      valor_estimado_recuperacao: selectedLead.valor_estimado_recuperacao ? Number(selectedLead.valor_estimado_recuperacao) : null,
-                      observacoes: selectedLead.observacoes,
-                    });
-                  }
-                }}
-              >
-                <Pencil className="h-4 w-4 mr-2" />
-                Editar
-              </Button>
-            ) : (
+            <div className="flex gap-2 items-center">
+              {!isEditing && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir
+                </Button>
+              )}
+              {!isEditing ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsEditing(true);
+                    if (selectedLead) {
+                      form.reset({
+                        nome_lead: selectedLead.nome_lead || '',
+                        email: selectedLead.email || '',
+                        estado: selectedLead.estado,
+                        categoria_lead: selectedLead.categoria_lead,
+                        status_lead: selectedLead.status_lead,
+                        tipo_caso: selectedLead.tipo_caso,
+                        tipo_financiamento: selectedLead.tipo_financiamento,
+                        status_imovel: selectedLead.status_imovel,
+                        valor_pago: selectedLead.valor_pago ? Number(selectedLead.valor_pago) : null,
+                        valor_estimado_recuperacao: selectedLead.valor_estimado_recuperacao ? Number(selectedLead.valor_estimado_recuperacao) : null,
+                        observacoes: selectedLead.observacoes,
+                      });
+                    }
+                  }}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Editar
+                </Button>
+              ) : (
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -892,7 +941,8 @@ const CRMDashboardReal: React.FC = () => {
                   Salvar
                 </Button>
               </div>
-            )}
+              )}
+            </div>
           </DialogHeader>
           {selectedLead && (
             <Form {...form}>
@@ -1663,6 +1713,41 @@ const CRMDashboardReal: React.FC = () => {
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent className="bg-slate-900 border-slate-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-slate-100">
+              Tem certeza que deseja excluir este lead?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              Esta ação não pode ser desfeita. O lead{' '}
+              <strong className="text-slate-300">{selectedLead?.nome_lead || 'Sem nome'}</strong>
+              {' '}(telefone: {selectedLead?.telefone}) será excluído permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-slate-800 text-slate-100 hover:bg-slate-700">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => selectedLead && deleteLeadMutation.mutate(selectedLead.id)}
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={deleteLeadMutation.isPending}
+            >
+              {deleteLeadMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                'Excluir'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
