@@ -17,8 +17,16 @@ import { useIABlockControl } from '@/hooks/useIABlockControl';
 import { FollowUpModal } from '@/components/FollowUpModal';
 import { useBulkFollowUpManager } from '@/hooks/useBulkFollowUpManager';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause, Pencil, Save, X as XIcon } from 'lucide-react';
 import { getEstadoFromTelefone } from '@/lib/utils';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 
 const getCategoryStyle = (category: string | null) => {
   switch (category) {
@@ -79,6 +87,23 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('pt-BR');
 };
 
+// Schema de validação para edição do lead
+const leadEditSchema = z.object({
+  nome_lead: z.string().min(1, 'Nome é obrigatório').max(100),
+  email: z.string().email('Email inválido').nullable().or(z.literal('')),
+  estado: z.string().nullable(),
+  categoria_lead: z.string().nullable(),
+  status_lead: z.string().nullable(),
+  tipo_caso: z.string().nullable(),
+  tipo_financiamento: z.string().nullable(),
+  status_imovel: z.string().nullable(),
+  valor_pago: z.coerce.number().min(0).nullable(),
+  valor_estimado_recuperacao: z.coerce.number().min(0).nullable(),
+  observacoes: z.string().nullable(),
+});
+
+type LeadEditFormData = z.infer<typeof leadEditSchema>;
+
 const CRMDashboardReal: React.FC = () => {
   const {
     leads,
@@ -92,6 +117,57 @@ const CRMDashboardReal: React.FC = () => {
   const [followUpModalOpen, setFollowUpModalOpen] = useState(false);
   const [selectedFollowUpLead, setSelectedFollowUpLead] = useState<LeadRoger | null>(null);
   const [showLeadModal, setShowLeadModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  const form = useForm<LeadEditFormData>({
+    resolver: zodResolver(leadEditSchema),
+  });
+  
+  // Mutation para salvar as alterações
+  const updateLeadMutation = useMutation({
+    mutationFn: async (data: LeadEditFormData) => {
+      if (!selectedLead) return;
+      
+      const { error } = await supabase
+        .from('leads_roger')
+        .update({
+          nome_lead: data.nome_lead,
+          email: data.email || null,
+          estado: data.estado,
+          categoria_lead: data.categoria_lead,
+          status_lead: data.status_lead,
+          tipo_caso: data.tipo_caso,
+          tipo_financiamento: data.tipo_financiamento,
+          status_imovel: data.status_imovel,
+          valor_pago: data.valor_pago,
+          valor_estimado_recuperacao: data.valor_estimado_recuperacao,
+          observacoes: data.observacoes,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', selectedLead.id);
+        
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leads-roger'] });
+      toast({
+        title: 'Lead atualizado',
+        description: 'As informações foram salvas com sucesso.',
+      });
+      setIsEditing(false);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erro ao salvar',
+        description: 'Não foi possível atualizar o lead. Tente novamente.',
+        variant: 'destructive',
+      });
+      console.error('Erro ao atualizar lead:', error);
+    },
+  });
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -607,68 +683,227 @@ const CRMDashboardReal: React.FC = () => {
       </div>
 
       {/* Lead Details Modal */}
-      <Dialog open={showLeadModal} onOpenChange={setShowLeadModal}>
+      <Dialog open={showLeadModal} onOpenChange={(open) => {
+        setShowLeadModal(open);
+        if (!open) {
+          setIsEditing(false);
+          form.reset();
+        }
+      }}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-slate-900 border-slate-700">
-          <DialogHeader>
+          <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle className="text-xl font-bold text-slate-100">
               Detalhes do Lead
             </DialogTitle>
+            {!isEditing ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsEditing(true);
+                  if (selectedLead) {
+                    form.reset({
+                      nome_lead: selectedLead.nome_lead || '',
+                      email: selectedLead.email || '',
+                      estado: selectedLead.estado,
+                      categoria_lead: selectedLead.categoria_lead,
+                      status_lead: selectedLead.status_lead,
+                      tipo_caso: selectedLead.tipo_caso,
+                      tipo_financiamento: selectedLead.tipo_financiamento,
+                      status_imovel: selectedLead.status_imovel,
+                      valor_pago: selectedLead.valor_pago ? Number(selectedLead.valor_pago) : null,
+                      valor_estimado_recuperacao: selectedLead.valor_estimado_recuperacao ? Number(selectedLead.valor_estimado_recuperacao) : null,
+                      observacoes: selectedLead.observacoes,
+                    });
+                  }
+                }}
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Editar
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsEditing(false);
+                    form.reset();
+                  }}
+                  disabled={updateLeadMutation.isPending}
+                >
+                  <XIcon className="h-4 w-4 mr-2" />
+                  Cancelar
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={form.handleSubmit((data) => updateLeadMutation.mutate(data))}
+                  disabled={updateLeadMutation.isPending}
+                >
+                  {updateLeadMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  Salvar
+                </Button>
+              </div>
+            )}
           </DialogHeader>
           {selectedLead && (
-            <div className="space-y-6 py-4">
-              {/* Informações Básicas */}
-              <div>
-                <h3 className="text-lg font-semibold text-slate-200 mb-3 border-b border-slate-600 pb-2">
-                  Informações Básicas
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-slate-300">Nome</Label>
-                    <p className="text-slate-100 font-medium">{selectedLead.nome_lead || 'Não informado'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-slate-300">Telefone</Label>
-                    <p className="text-slate-100 font-medium">{selectedLead.telefone}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-slate-300">Email</Label>
-                    <p className="text-slate-100 font-medium">{selectedLead.email || 'Não informado'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-slate-300">Estado</Label>
-                    <p className="text-slate-100 font-medium">{getEstadoFromTelefone(selectedLead.telefone) || selectedLead.estado || 'Não informado'}</p>
-                  </div>
-                  {selectedLead.data_compra && (
+            <Form {...form}>
+              <div className="space-y-6 py-4">
+                {/* Informações Básicas */}
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-200 mb-3 border-b border-slate-600 pb-2">
+                    Informações Básicas
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="nome_lead"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-slate-300">Nome</FormLabel>
+                          {isEditing ? (
+                            <FormControl>
+                              <Input {...field} className="bg-slate-800 border-slate-600 text-slate-100" />
+                            </FormControl>
+                          ) : (
+                            <p className="text-slate-100 font-medium">{selectedLead.nome_lead || 'Não informado'}</p>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <div>
-                      <Label className="text-sm font-medium text-slate-300">Data da Compra</Label>
-                      <p className="text-slate-100 font-medium">{formatDate(selectedLead.data_compra)}</p>
+                      <Label className="text-sm font-medium text-slate-300">Telefone</Label>
+                      <p className="text-slate-100 font-medium">{selectedLead.telefone}</p>
                     </div>
-                  )}
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-slate-300">Email</FormLabel>
+                          {isEditing ? (
+                            <FormControl>
+                              <Input {...field} value={field.value || ''} type="email" className="bg-slate-800 border-slate-600 text-slate-100" />
+                            </FormControl>
+                          ) : (
+                            <p className="text-slate-100 font-medium">{selectedLead.email || 'Não informado'}</p>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="estado"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-slate-300">Estado</FormLabel>
+                          {isEditing ? (
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                              <FormControl>
+                                <SelectTrigger className="bg-slate-800 border-slate-600 text-slate-100">
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'].map((uf) => (
+                                  <SelectItem key={uf} value={uf}>{uf}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <p className="text-slate-100 font-medium">{getEstadoFromTelefone(selectedLead.telefone) || selectedLead.estado || 'Não informado'}</p>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {selectedLead.data_compra && (
+                      <div>
+                        <Label className="text-sm font-medium text-slate-300">Data da Compra</Label>
+                        <p className="text-slate-100 font-medium">{formatDate(selectedLead.data_compra)}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* Classificação e Status */}
-              <div>
-                <h3 className="text-lg font-semibold text-slate-200 mb-3 border-b border-slate-600 pb-2">
-                  Classificação e Status
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-slate-300">Categoria</Label>
-                    <div className="mt-1">
-                      <Badge className={getCategoryStyle(selectedLead.categoria_lead)}>
-                        {selectedLead.categoria_lead || 'Não categorizado'}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-slate-300">Status</Label>
-                    <div className="mt-1">
-                      <Badge className={getStatusStyle(selectedLead.status_lead)}>
-                        {selectedLead.status_lead || 'Novo'}
-                      </Badge>
-                    </div>
-                  </div>
+                {/* Classificação e Status */}
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-200 mb-3 border-b border-slate-600 pb-2">
+                    Classificação e Status
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="categoria_lead"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-slate-300">Categoria</FormLabel>
+                          {isEditing ? (
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                              <FormControl>
+                                <SelectTrigger className="bg-slate-800 border-slate-600 text-slate-100">
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="PREMIUM">PREMIUM</SelectItem>
+                                <SelectItem value="QUALIFICADO">QUALIFICADO</SelectItem>
+                                <SelectItem value="POTENCIAL">POTENCIAL</SelectItem>
+                                <SelectItem value="BAIXO_POTENCIAL">BAIXO_POTENCIAL</SelectItem>
+                                <SelectItem value="NAO_QUALIFICADO">NAO_QUALIFICADO</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <div className="mt-1">
+                              <Badge className={getCategoryStyle(selectedLead.categoria_lead)}>
+                                {selectedLead.categoria_lead || 'Não categorizado'}
+                              </Badge>
+                            </div>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="status_lead"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-slate-300">Status</FormLabel>
+                          {isEditing ? (
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                              <FormControl>
+                                <SelectTrigger className="bg-slate-800 border-slate-600 text-slate-100">
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="novo">Novo</SelectItem>
+                                <SelectItem value="em_atendimento">Em Atendimento</SelectItem>
+                                <SelectItem value="qualificado">Qualificado</SelectItem>
+                                <SelectItem value="proposta_enviada">Proposta Enviada</SelectItem>
+                                <SelectItem value="negociacao">Negociação</SelectItem>
+                                <SelectItem value="convertido">Convertido</SelectItem>
+                                <SelectItem value="perdido">Perdido</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <div className="mt-1">
+                              <Badge className={getStatusStyle(selectedLead.status_lead)}>
+                                {selectedLead.status_lead || 'Novo'}
+                              </Badge>
+                            </div>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   <div>
                     <Label className="text-sm font-medium text-slate-300">Score Total</Label>
                     <p className="text-slate-100 font-medium text-lg">{selectedLead.score_total || 0}</p>
@@ -694,31 +929,81 @@ const CRMDashboardReal: React.FC = () => {
                 </div>
               </div>
 
-              {/* Informações do Caso */}
-              {(selectedLead.tipo_caso || selectedLead.tipo_financiamento || selectedLead.status_imovel) && (
+                {/* Informações do Caso */}
                 <div>
                   <h3 className="text-lg font-semibold text-slate-200 mb-3 border-b border-slate-600 pb-2">
                     Informações do Caso
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {selectedLead.tipo_caso && (
-                      <div>
-                        <Label className="text-sm font-medium text-slate-300">Tipo do Caso</Label>
-                        <p className="text-slate-100 font-medium">{selectedLead.tipo_caso}</p>
-                      </div>
-                    )}
-                    {selectedLead.tipo_financiamento && (
-                      <div>
-                        <Label className="text-sm font-medium text-slate-300">Tipo de Financiamento</Label>
-                        <p className="text-slate-100 font-medium">{selectedLead.tipo_financiamento}</p>
-                      </div>
-                    )}
-                    {selectedLead.status_imovel && (
-                      <div>
-                        <Label className="text-sm font-medium text-slate-300">Status do Imóvel</Label>
-                        <p className="text-slate-100 font-medium">{selectedLead.status_imovel}</p>
-                      </div>
-                    )}
+                    <FormField
+                      control={form.control}
+                      name="tipo_caso"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-slate-300">Tipo do Caso</FormLabel>
+                          {isEditing ? (
+                            <FormControl>
+                              <Input {...field} value={field.value || ''} className="bg-slate-800 border-slate-600 text-slate-100" />
+                            </FormControl>
+                          ) : (
+                            <p className="text-slate-100 font-medium">{selectedLead.tipo_caso || 'Não informado'}</p>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="tipo_financiamento"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-slate-300">Tipo de Financiamento</FormLabel>
+                          {isEditing ? (
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                              <FormControl>
+                                <SelectTrigger className="bg-slate-800 border-slate-600 text-slate-100">
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="Minha Casa Minha Vida">Minha Casa Minha Vida</SelectItem>
+                                <SelectItem value="SFH">SFH</SelectItem>
+                                <SelectItem value="Outros">Outros</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <p className="text-slate-100 font-medium">{selectedLead.tipo_financiamento || 'Não informado'}</p>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="status_imovel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-slate-300">Status do Imóvel</FormLabel>
+                          {isEditing ? (
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                              <FormControl>
+                                <SelectTrigger className="bg-slate-800 border-slate-600 text-slate-100">
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="Entregue">Entregue</SelectItem>
+                                <SelectItem value="Em construção">Em construção</SelectItem>
+                                <SelectItem value="Não entregue">Não entregue</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <p className="text-slate-100 font-medium">{selectedLead.status_imovel || 'Não informado'}</p>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     {selectedLead.proposta_recomendada && (
                       <div>
                         <Label className="text-sm font-medium text-slate-300">Proposta Recomendada</Label>
@@ -727,28 +1012,65 @@ const CRMDashboardReal: React.FC = () => {
                     )}
                   </div>
                 </div>
-              )}
 
-              {/* Valores */}
-              <div>
-                <h3 className="text-lg font-semibold text-slate-200 mb-3 border-b border-slate-600 pb-2">
-                  Valores
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-slate-300">Valor Pago</Label>
-                    <p className="text-slate-100 font-medium text-lg">{formatCurrency(selectedLead.valor_pago)}</p>
+                {/* Valores */}
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-200 mb-3 border-b border-slate-600 pb-2">
+                    Valores
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="valor_pago"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-slate-300">Valor Pago</FormLabel>
+                          {isEditing ? (
+                            <FormControl>
+                              <Input 
+                                {...field} 
+                                type="number" 
+                                step="0.01"
+                                value={field.value || ''} 
+                                className="bg-slate-800 border-slate-600 text-slate-100" 
+                                placeholder="0.00"
+                              />
+                            </FormControl>
+                          ) : (
+                            <p className="text-slate-100 font-medium text-lg">{formatCurrency(selectedLead.valor_pago)}</p>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="valor_estimado_recuperacao"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-slate-300">Valor Estimado de Recuperação</FormLabel>
+                          {isEditing ? (
+                            <FormControl>
+                              <Input 
+                                {...field} 
+                                type="number" 
+                                step="0.01"
+                                value={field.value || ''} 
+                                className="bg-slate-800 border-slate-600 text-slate-100" 
+                                placeholder="0.00"
+                              />
+                            </FormControl>
+                          ) : (
+                            <p className="text-slate-100 font-medium text-lg text-green-400">
+                              {formatCurrency(selectedLead.valor_estimado_recuperacao)}
+                            </p>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                  {selectedLead.valor_estimado_recuperacao && (
-                    <div>
-                      <Label className="text-sm font-medium text-slate-300">Valor Estimado de Recuperação</Label>
-                      <p className="text-slate-100 font-medium text-lg text-green-400">
-                        {formatCurrency(selectedLead.valor_estimado_recuperacao)}
-                      </p>
-                    </div>
-                  )}
                 </div>
-              </div>
 
               {/* Resumo da IA */}
               {selectedLead.resumo_ia && (
@@ -762,21 +1084,38 @@ const CRMDashboardReal: React.FC = () => {
                 </div>
               )}
 
-              {/* Observações e Motivos */}
-              {(selectedLead.observacoes || selectedLead.motivo_desqualificacao) && (
+                {/* Observações e Motivos */}
                 <div>
                   <h3 className="text-lg font-semibold text-slate-200 mb-3 border-b border-slate-600 pb-2">
                     Observações
                   </h3>
                   <div className="space-y-4">
-                    {selectedLead.observacoes && (
-                      <div>
-                        <Label className="text-sm font-medium text-slate-300">Observações Gerais</Label>
-                        <div className="bg-slate-800 rounded-lg p-4 mt-2">
-                          <p className="text-slate-100 leading-relaxed">{selectedLead.observacoes}</p>
-                        </div>
-                      </div>
-                    )}
+                    <FormField
+                      control={form.control}
+                      name="observacoes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-slate-300">Observações Gerais</FormLabel>
+                          {isEditing ? (
+                            <FormControl>
+                              <Textarea 
+                                {...field} 
+                                value={field.value || ''} 
+                                className="bg-slate-800 border-slate-600 text-slate-100 min-h-[100px]" 
+                                placeholder="Digite as observações..."
+                              />
+                            </FormControl>
+                          ) : selectedLead.observacoes ? (
+                            <div className="bg-slate-800 rounded-lg p-4 mt-2">
+                              <p className="text-slate-100 leading-relaxed">{selectedLead.observacoes}</p>
+                            </div>
+                          ) : (
+                            <p className="text-slate-100 font-medium">Nenhuma observação</p>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     {selectedLead.motivo_desqualificacao && (
                       <div>
                         <Label className="text-sm font-medium text-slate-300">Motivo da Desqualificação</Label>
@@ -787,8 +1126,8 @@ const CRMDashboardReal: React.FC = () => {
                     )}
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            </Form>
           )}
         </DialogContent>
       </Dialog>
