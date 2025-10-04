@@ -3,42 +3,32 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2, CalendarIcon, AlertCircle, UserPlus, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
+import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2, CalendarIcon, AlertCircle, UserPlus, Trash2, Play, Pause, Pencil, Save, X as XIcon } from 'lucide-react';
 import { format, subDays, subHours, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useLeadsRoger, LeadRoger } from '@/hooks/useLeadsRoger';
-import { useIABlockControl } from '@/hooks/useIABlockControl';
-import { FollowUpModal } from '@/components/FollowUpModal';
-import { useBulkFollowUpManager } from '@/hooks/useBulkFollowUpManager';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Play, Pause, Pencil, Save, X as XIcon } from 'lucide-react';
-import { getEstadoFromTelefone } from '@/lib/utils';
-import { ObservacoesHistory } from '@/components/ObservacoesHistory';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
-import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { useLeadsRoger, LeadRoger } from '@/hooks/useLeadsRoger';
+import { useIABlockControl } from '@/hooks/useIABlockControl';
+import { useBulkFollowUpManager } from '@/hooks/useBulkFollowUpManager';
+import { FollowUpModal } from '@/components/FollowUpModal';
+import { ObservacoesHistory } from './ObservacoesHistory';
+import { getEstadoFromTelefone } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 const getCategoryStyle = (category: string | null) => {
   switch (category) {
