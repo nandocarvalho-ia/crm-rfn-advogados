@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2, CalendarIcon, AlertCircle } from 'lucide-react';
+import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2, CalendarIcon, AlertCircle, UserPlus } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { format, subDays, subHours, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -103,6 +103,27 @@ const leadEditSchema = z.object({
 
 type LeadEditFormData = z.infer<typeof leadEditSchema>;
 
+// Schema de validação para criação de lead
+const leadCreateSchema = z.object({
+  telefone: z.string()
+    .min(11, 'Telefone deve ter 11 dígitos')
+    .max(11, 'Telefone deve ter 11 dígitos')
+    .regex(/^\d{11}$/, 'Formato inválido. Use apenas números (DDD + número)'),
+  nome_lead: z.string().min(1, 'Nome é obrigatório').max(100),
+  email: z.string().email('Email inválido').optional().or(z.literal('')),
+  estado: z.string().optional(),
+  categoria_lead: z.string().default('NÃO CLASSIFICADO'),
+  status_lead: z.string().default('novo'),
+  tipo_caso: z.string().optional(),
+  tipo_financiamento: z.string().optional(),
+  status_imovel: z.string().optional(),
+  valor_pago: z.coerce.number().min(0, 'Valor não pode ser negativo').optional(),
+  valor_estimado_recuperacao: z.coerce.number().min(0, 'Valor não pode ser negativo').optional(),
+  observacoes: z.string().optional(),
+});
+
+type LeadCreateFormData = z.infer<typeof leadCreateSchema>;
+
 const CRMDashboardReal: React.FC = () => {
   const {
     leads,
@@ -117,12 +138,24 @@ const CRMDashboardReal: React.FC = () => {
   const [selectedFollowUpLead, setSelectedFollowUpLead] = useState<LeadRoger | null>(null);
   const [showLeadModal, setShowLeadModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   
   const queryClient = useQueryClient();
   const { toast } = useToast();
   
   const form = useForm<LeadEditFormData>({
     resolver: zodResolver(leadEditSchema),
+  });
+  
+  const createForm = useForm<LeadCreateFormData>({
+    resolver: zodResolver(leadCreateSchema),
+    defaultValues: {
+      categoria_lead: 'NÃO CLASSIFICADO',
+      status_lead: 'novo',
+      telefone: '',
+      nome_lead: '',
+      email: '',
+    }
   });
   
   // Mutation para salvar as alterações
@@ -175,6 +208,71 @@ const CRMDashboardReal: React.FC = () => {
         variant: 'destructive',
       });
       console.error('Erro ao atualizar lead:', error);
+    },
+  });
+  
+  // Mutation para criar novo lead
+  const createLeadMutation = useMutation({
+    mutationFn: async (data: LeadCreateFormData) => {
+      // Verificar se telefone já existe
+      const { data: existingLead } = await supabase
+        .from('leads_roger')
+        .select('id, nome_lead')
+        .eq('telefone', Number(data.telefone))
+        .single();
+        
+      if (existingLead) {
+        throw new Error(`Lead "${existingLead.nome_lead}" já existe com este telefone`);
+      }
+      
+      // Auto-detectar estado pelo DDD
+      const autoEstado = data.estado || getEstadoFromTelefone(data.telefone);
+      
+      // Auto-update status_qualificacao baseado em categoria_lead
+      let autoStatusQualificacao = 'qualificando';
+      if (data.categoria_lead === 'POTENCIAL EXCELENTE' || data.categoria_lead === 'EXCELENTE') {
+        autoStatusQualificacao = 'transferido';
+      } else if (data.categoria_lead === 'DESQUALIFICADO') {
+        autoStatusQualificacao = 'desqualificado';
+      }
+      
+      const { error } = await supabase
+        .from('leads_roger')
+        .insert({
+          telefone: Number(data.telefone),
+          nome_lead: data.nome_lead,
+          email: data.email || null,
+          estado: autoEstado,
+          categoria_lead: data.categoria_lead,
+          status_lead: data.status_lead,
+          tipo_caso: data.tipo_caso || null,
+          tipo_financiamento: data.tipo_financiamento || null,
+          status_imovel: data.status_imovel || null,
+          valor_pago: data.valor_pago || null,
+          valor_estimado_recuperacao: data.valor_estimado_recuperacao || null,
+          observacoes: data.observacoes || null,
+          instancia: 'roger',
+          status_qualificacao: autoStatusQualificacao,
+        });
+        
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leads-roger'] });
+      toast({
+        title: 'Lead criado',
+        description: 'Novo lead foi adicionado com sucesso.',
+      });
+      setShowCreateModal(false);
+      createForm.reset();
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erro ao criar lead',
+        description: error.message || 'Não foi possível criar o lead. Tente novamente.',
+        variant: 'destructive',
+      });
+      console.error('Erro ao criar lead:', error);
     },
   });
 
@@ -309,6 +407,15 @@ const CRMDashboardReal: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={() => setShowCreateModal(true)}
+                className="gap-2"
+              >
+                <UserPlus className="h-4 w-4" />
+                Novo Lead
+              </Button>
               <Button 
                 variant="outline" 
                 size="sm"
@@ -1168,6 +1275,365 @@ const CRMDashboardReal: React.FC = () => {
         }}
         lead={selectedFollowUpLead}
       />
+      
+      {/* Create Lead Modal */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-slate-100">Criar Novo Lead</DialogTitle>
+          </DialogHeader>
+          
+          <Form {...createForm}>
+            <form onSubmit={createForm.handleSubmit((data) => createLeadMutation.mutate(data))} className="space-y-6">
+              {/* Alert informativo */}
+              <Alert className="bg-blue-900/20 border-blue-600">
+                <AlertCircle className="h-4 w-4 text-blue-400" />
+                <AlertTitle className="text-blue-300">Informações Automáticas</AlertTitle>
+                <AlertDescription className="text-blue-200 text-sm">
+                  • O estado será detectado automaticamente pelo DDD do telefone<br />
+                  • Categoria padrão: NÃO CLASSIFICADO (será atualizada pela IA)<br />
+                  • Status padrão: novo
+                </AlertDescription>
+              </Alert>
+              
+              <div className="grid grid-cols-2 gap-6">
+                {/* Coluna 1 - Dados Básicos */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-slate-200 border-b border-slate-600 pb-2">
+                    Dados Básicos
+                  </h3>
+                  
+                  <FormField
+                    control={createForm.control}
+                    name="telefone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-300">Telefone* (DDD + Número)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            placeholder="11999887766"
+                            className="bg-slate-800 border-slate-600 text-slate-100"
+                            maxLength={11}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '');
+                              field.onChange(value);
+                              // Auto-detectar estado
+                              if (value.length >= 2) {
+                                const estado = getEstadoFromTelefone(value);
+                                if (estado) {
+                                  createForm.setValue('estado', estado);
+                                }
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        {createForm.watch('telefone')?.length >= 2 && createForm.watch('estado') && (
+                          <p className="text-xs text-green-400 mt-1">
+                            Estado detectado: {createForm.watch('estado')}
+                          </p>
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={createForm.control}
+                    name="nome_lead"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-300">Nome do Lead*</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            placeholder="Digite o nome completo"
+                            className="bg-slate-800 border-slate-600 text-slate-100"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={createForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-300">Email</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            type="email"
+                            placeholder="email@exemplo.com"
+                            className="bg-slate-800 border-slate-600 text-slate-100"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={createForm.control}
+                    name="estado"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-300">Estado</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            value={field.value || ''}
+                            placeholder="Auto-detectado"
+                            className="bg-slate-800 border-slate-600 text-slate-100"
+                            maxLength={2}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={createForm.control}
+                    name="categoria_lead"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-300">Categoria</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="bg-slate-800 border-slate-600 text-slate-100">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="NÃO CLASSIFICADO">NÃO CLASSIFICADO</SelectItem>
+                            <SelectItem value="POTENCIAL BOM">POTENCIAL BOM</SelectItem>
+                            <SelectItem value="BOM">BOM</SelectItem>
+                            <SelectItem value="POTENCIAL EXCELENTE">POTENCIAL EXCELENTE</SelectItem>
+                            <SelectItem value="EXCELENTE">EXCELENTE</SelectItem>
+                            <SelectItem value="DESQUALIFICADO">DESQUALIFICADO</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {(createForm.watch('categoria_lead') === 'POTENCIAL EXCELENTE' || 
+                    createForm.watch('categoria_lead') === 'EXCELENTE') && (
+                    <Alert className="bg-amber-900/20 border-amber-600">
+                      <AlertCircle className="h-4 w-4 text-amber-400" />
+                      <AlertDescription className="text-amber-300 text-sm">
+                        Este lead será automaticamente marcado como "transferido"
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {createForm.watch('categoria_lead') === 'DESQUALIFICADO' && (
+                    <Alert className="bg-red-900/20 border-red-600">
+                      <AlertCircle className="h-4 w-4 text-red-400" />
+                      <AlertDescription className="text-red-300 text-sm">
+                        Este lead será marcado como desqualificado. Preencha o motivo nas observações.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  <FormField
+                    control={createForm.control}
+                    name="status_lead"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-300">Status</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="bg-slate-800 border-slate-600 text-slate-100">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="novo">Novo</SelectItem>
+                            <SelectItem value="conversando">Conversando</SelectItem>
+                            <SelectItem value="convertido">Convertido</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                {/* Coluna 2 - Detalhes do Caso */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-slate-200 border-b border-slate-600 pb-2">
+                    Detalhes do Caso
+                  </h3>
+                  
+                  <FormField
+                    control={createForm.control}
+                    name="tipo_caso"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-300">Tipo de Caso</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            value={field.value || ''}
+                            placeholder="Ex: Imobiliário, Financeiro..."
+                            className="bg-slate-800 border-slate-600 text-slate-100"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={createForm.control}
+                    name="tipo_financiamento"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-300">Tipo de Financiamento</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ''}>
+                          <FormControl>
+                            <SelectTrigger className="bg-slate-800 border-slate-600 text-slate-100">
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="caixa">Caixa</SelectItem>
+                            <SelectItem value="consorcio">Consórcio</SelectItem>
+                            <SelectItem value="banco">Banco</SelectItem>
+                            <SelectItem value="outro">Outro</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={createForm.control}
+                    name="status_imovel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-300">Status do Imóvel</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ''}>
+                          <FormControl>
+                            <SelectTrigger className="bg-slate-800 border-slate-600 text-slate-100">
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="entregue">Entregue</SelectItem>
+                            <SelectItem value="nao_entregue">Não Entregue</SelectItem>
+                            <SelectItem value="em_construcao">Em Construção</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={createForm.control}
+                    name="valor_pago"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-300">Valor Pago (R$)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            className="bg-slate-800 border-slate-600 text-slate-100"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={createForm.control}
+                    name="valor_estimado_recuperacao"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-300">Valor Estimado Recuperação (R$)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            className="bg-slate-800 border-slate-600 text-slate-100"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={createForm.control}
+                    name="observacoes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-300">Observações</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            {...field} 
+                            value={field.value || ''}
+                            className="bg-slate-800 border-slate-600 text-slate-100 min-h-[120px]"
+                            placeholder="Digite observações relevantes sobre o lead..."
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              
+              {/* Footer com Botões */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    createForm.reset();
+                  }}
+                  disabled={createLeadMutation.isPending}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={createLeadMutation.isPending}
+                  className="gap-2"
+                >
+                  {createLeadMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Criando...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4" />
+                      Criar Lead
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
