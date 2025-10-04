@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2, CalendarIcon } from 'lucide-react';
+import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2, CalendarIcon, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { format, subDays, subHours, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useLeadsRoger, LeadRoger } from '@/hooks/useLeadsRoger';
@@ -30,22 +31,20 @@ import { useToast } from '@/hooks/use-toast';
 
 const getCategoryStyle = (category: string | null) => {
   switch (category) {
-    case 'PREMIUM_ATRASO':
-      return 'bg-crm-primary text-white';
-    case 'A_EXCELENTE':
-      return 'bg-crm-primary/90 text-white';
-    case 'B_MUITO_BOM':
-      return 'bg-crm-primary/80 text-white';
-    case 'C_BOM':
-      return 'bg-crm-primary/60 text-white';
-    case 'D_REGULAR':
-      return 'bg-crm-primary/40 text-crm-primary';
-    case 'E_BAIXO':
-      return 'bg-crm-secondary text-crm-primary';
+    case 'EXCELENTE':
+      return 'bg-emerald-600 text-white font-bold';
+    case 'POTENCIAL EXCELENTE':
+      return 'bg-emerald-500 text-white';
+    case 'BOM':
+      return 'bg-blue-600 text-white font-semibold';
+    case 'POTENCIAL BOM':
+      return 'bg-blue-500 text-white';
     case 'DESQUALIFICADO':
-      return 'bg-crm-secondary/60 text-crm-primary';
+      return 'bg-red-600 text-white';
+    case 'NÃO CLASSIFICADO':
+      return 'bg-gray-500 text-white';
     default:
-      return 'bg-crm-secondary/80 text-crm-primary';
+      return 'bg-gray-400 text-white';
   }
 };
 
@@ -131,6 +130,15 @@ const CRMDashboardReal: React.FC = () => {
     mutationFn: async (data: LeadEditFormData) => {
       if (!selectedLead) return;
       
+      // Auto-update status_qualificacao baseado em categoria_lead
+      let autoStatusQualificacao = selectedLead.status_qualificacao;
+      
+      if (data.categoria_lead === 'POTENCIAL EXCELENTE' || data.categoria_lead === 'EXCELENTE') {
+        autoStatusQualificacao = 'transferido';
+      } else if (data.categoria_lead === 'DESQUALIFICADO') {
+        autoStatusQualificacao = 'desqualificado';
+      }
+      
       const { error } = await supabase
         .from('leads_roger')
         .update({
@@ -145,6 +153,7 @@ const CRMDashboardReal: React.FC = () => {
           valor_pago: data.valor_pago,
           valor_estimado_recuperacao: data.valor_estimado_recuperacao,
           observacoes: data.observacoes,
+          status_qualificacao: autoStatusQualificacao,
           updated_at: new Date().toISOString(),
         })
         .eq('id', selectedLead.id);
@@ -228,13 +237,11 @@ const CRMDashboardReal: React.FC = () => {
       let matchesCategory = true;
       if (categoryFilter !== 'Todas') {
         const categoryMap: Record<string, string> = {
-          'Premium Atraso': 'PREMIUM_ATRASO',
-          'Premium Tempo': 'PREMIUM_TEMPO', 
-          'A Excelente': 'A_EXCELENTE',
-          'B Muito Bom': 'B_MUITO_BOM',
-          'C Bom': 'C_BOM',
-          'D Regular': 'D_REGULAR',
-          'E Baixo': 'E_BAIXO',
+          'Não Classificado': 'NÃO CLASSIFICADO',
+          'Potencial Bom': 'POTENCIAL BOM',
+          'Bom': 'BOM',
+          'Potencial Excelente': 'POTENCIAL EXCELENTE',
+          'Excelente': 'EXCELENTE',
           'Desqualificado': 'DESQUALIFICADO'
         };
         const dbCategoryValue = categoryMap[categoryFilter];
@@ -423,13 +430,11 @@ const CRMDashboardReal: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Todas">Todas</SelectItem>
-                      <SelectItem value="Premium Atraso">Premium Atraso</SelectItem>
-                      <SelectItem value="Premium Tempo">Premium Tempo</SelectItem>
-                      <SelectItem value="A Excelente">A Excelente</SelectItem>
-                      <SelectItem value="B Muito Bom">B Muito Bom</SelectItem>
-                      <SelectItem value="C Bom">C Bom</SelectItem>
-                      <SelectItem value="D Regular">D Regular</SelectItem>
-                      <SelectItem value="E Baixo">E Baixo</SelectItem>
+                      <SelectItem value="Não Classificado">Não Classificado</SelectItem>
+                      <SelectItem value="Potencial Bom">Potencial Bom</SelectItem>
+                      <SelectItem value="Bom">Bom</SelectItem>
+                      <SelectItem value="Potencial Excelente">Potencial Excelente</SelectItem>
+                      <SelectItem value="Excelente">Excelente</SelectItem>
                       <SelectItem value="Desqualificado">Desqualificado</SelectItem>
                     </SelectContent>
                   </Select>
@@ -852,11 +857,12 @@ const CRMDashboardReal: React.FC = () => {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="PREMIUM">PREMIUM</SelectItem>
-                                <SelectItem value="QUALIFICADO">QUALIFICADO</SelectItem>
-                                <SelectItem value="POTENCIAL">POTENCIAL</SelectItem>
-                                <SelectItem value="BAIXO_POTENCIAL">BAIXO_POTENCIAL</SelectItem>
-                                <SelectItem value="NAO_QUALIFICADO">NAO_QUALIFICADO</SelectItem>
+                                <SelectItem value="NÃO CLASSIFICADO">NÃO CLASSIFICADO</SelectItem>
+                                <SelectItem value="POTENCIAL BOM">POTENCIAL BOM</SelectItem>
+                                <SelectItem value="BOM">BOM</SelectItem>
+                                <SelectItem value="POTENCIAL EXCELENTE">POTENCIAL EXCELENTE</SelectItem>
+                                <SelectItem value="EXCELENTE">EXCELENTE</SelectItem>
+                                <SelectItem value="DESQUALIFICADO">DESQUALIFICADO</SelectItem>
                               </SelectContent>
                             </Select>
                           ) : (
@@ -867,6 +873,27 @@ const CRMDashboardReal: React.FC = () => {
                             </div>
                           )}
                           <FormMessage />
+                          
+                          {/* Alertas de transferência/desqualificação automática */}
+                          {isEditing && (form.watch('categoria_lead') === 'POTENCIAL EXCELENTE' || form.watch('categoria_lead') === 'EXCELENTE') && (
+                            <Alert className="mt-2 bg-amber-900/20 border-amber-600">
+                              <AlertCircle className="h-4 w-4 text-amber-500" />
+                              <AlertTitle className="text-amber-400">Transferência Automática</AlertTitle>
+                              <AlertDescription className="text-amber-300">
+                                Este lead será automaticamente marcado como "transferido" para atendimento humano.
+                              </AlertDescription>
+                            </Alert>
+                          )}
+                          
+                          {isEditing && form.watch('categoria_lead') === 'DESQUALIFICADO' && (
+                            <Alert className="mt-2 bg-red-900/20 border-red-600">
+                              <AlertCircle className="h-4 w-4 text-red-500" />
+                              <AlertTitle className="text-red-400">Lead Desqualificado</AlertTitle>
+                              <AlertDescription className="text-red-300">
+                                Este lead não atende os critérios mínimos e será marcado como desqualificado.
+                              </AlertDescription>
+                            </Alert>
+                          )}
                         </FormItem>
                       )}
                     />
