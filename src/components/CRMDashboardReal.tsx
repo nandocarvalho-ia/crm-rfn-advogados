@@ -20,6 +20,7 @@ import { useBulkFollowUpManager } from '@/hooks/useBulkFollowUpManager';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Play, Pause, Pencil, Save, X as XIcon } from 'lucide-react';
 import { getEstadoFromTelefone } from '@/lib/utils';
+import { ObservacoesHistory } from '@/components/ObservacoesHistory';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -163,6 +164,9 @@ const CRMDashboardReal: React.FC = () => {
     mutationFn: async (data: LeadEditFormData) => {
       if (!selectedLead) return;
       
+      // Extrair observações dos dados
+      const { observacoes, ...leadData } = data;
+      
       // Auto-update status_qualificacao baseado em categoria_lead
       let autoStatusQualificacao = selectedLead.status_qualificacao;
       
@@ -172,34 +176,41 @@ const CRMDashboardReal: React.FC = () => {
         autoStatusQualificacao = 'desqualificado';
       }
       
+      // Atualizar lead SEM observacoes
       const { error } = await supabase
         .from('leads_roger')
         .update({
-          nome_lead: data.nome_lead,
-          email: data.email || null,
-          estado: data.estado,
-          categoria_lead: data.categoria_lead,
-          status_lead: data.status_lead,
-          tipo_caso: data.tipo_caso,
-          tipo_financiamento: data.tipo_financiamento,
-          status_imovel: data.status_imovel,
-          valor_pago: data.valor_pago,
-          valor_estimado_recuperacao: data.valor_estimado_recuperacao,
-          observacoes: data.observacoes,
+          ...leadData,
           status_qualificacao: autoStatusQualificacao,
           updated_at: new Date().toISOString(),
         })
         .eq('id', selectedLead.id);
         
       if (error) throw error;
+      
+      // Se tiver observações novas, adicionar à tabela interacoes
+      if (observacoes && observacoes.trim()) {
+        await supabase
+          .from('interacoes')
+          .insert({
+            lead_id: selectedLead.id,
+            tipo: 'nota',
+            conteudo: observacoes,
+            enviada_por: 'CRM Dashboard',
+            direção: 'interna',
+            status: 'registrada',
+          });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads-roger'] });
+      queryClient.invalidateQueries({ queryKey: ['lead-observacoes'] });
       toast({
         title: 'Lead atualizado',
         description: 'As informações foram salvas com sucesso.',
       });
       setIsEditing(false);
+      form.setValue('observacoes', ''); // Limpar campo de observações
     },
     onError: (error) => {
       toast({
@@ -225,37 +236,58 @@ const CRMDashboardReal: React.FC = () => {
         throw new Error(`Lead "${existingLead.nome_lead}" já existe com este telefone`);
       }
       
+      // Extrair observações dos dados
+      const { observacoes, ...leadData } = data;
+      
       // Auto-detectar estado pelo DDD
-      const autoEstado = data.estado || getEstadoFromTelefone(data.telefone);
+      const autoEstado = leadData.estado || getEstadoFromTelefone(leadData.telefone);
       
       // Auto-update status_qualificacao baseado em categoria_lead
       let autoStatusQualificacao = 'qualificando';
-      if (data.categoria_lead === 'POTENCIAL EXCELENTE' || data.categoria_lead === 'EXCELENTE') {
+      if (leadData.categoria_lead === 'POTENCIAL EXCELENTE' || leadData.categoria_lead === 'EXCELENTE') {
         autoStatusQualificacao = 'transferido';
-      } else if (data.categoria_lead === 'DESQUALIFICADO') {
+      } else if (leadData.categoria_lead === 'DESQUALIFICADO') {
         autoStatusQualificacao = 'desqualificado';
       }
       
-      const { error } = await supabase
+      // Inserir lead SEM observacoes
+      const { data: newLead, error: leadError } = await supabase
         .from('leads_roger')
         .insert({
-          telefone: Number(data.telefone),
-          nome_lead: data.nome_lead,
-          email: data.email || null,
+          telefone: Number(leadData.telefone),
+          nome_lead: leadData.nome_lead,
+          email: leadData.email || null,
           estado: autoEstado,
-          categoria_lead: data.categoria_lead,
-          status_lead: data.status_lead,
-          tipo_caso: data.tipo_caso || null,
-          tipo_financiamento: data.tipo_financiamento || null,
-          status_imovel: data.status_imovel || null,
-          valor_pago: data.valor_pago || null,
-          valor_estimado_recuperacao: data.valor_estimado_recuperacao || null,
-          observacoes: data.observacoes || null,
+          categoria_lead: leadData.categoria_lead,
+          status_lead: leadData.status_lead,
+          tipo_caso: leadData.tipo_caso || null,
+          tipo_financiamento: leadData.tipo_financiamento || null,
+          status_imovel: leadData.status_imovel || null,
+          valor_pago: leadData.valor_pago || null,
+          valor_estimado_recuperacao: leadData.valor_estimado_recuperacao || null,
           instancia: 'roger',
           status_qualificacao: autoStatusQualificacao,
-        });
+        })
+        .select()
+        .single();
         
-      if (error) throw error;
+      if (leadError) throw leadError;
+      
+      // Se tiver observações, salvar na tabela interacoes
+      if (observacoes && observacoes.trim() && newLead) {
+        await supabase
+          .from('interacoes')
+          .insert({
+            lead_id: newLead.id,
+            tipo: 'nota',
+            conteudo: observacoes,
+            enviada_por: 'CRM Dashboard',
+            direção: 'interna',
+            status: 'registrada',
+          });
+      }
+      
+      return newLead;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads-roger'] });
@@ -1229,27 +1261,24 @@ const CRMDashboardReal: React.FC = () => {
                       name="observacoes"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium text-slate-300">Observações Gerais</FormLabel>
-                          {isEditing ? (
+                          <FormLabel className="text-sm font-medium text-slate-300">Nova Observação</FormLabel>
+                          {isEditing && (
                             <FormControl>
                               <Textarea 
                                 {...field} 
                                 value={field.value || ''} 
                                 className="bg-slate-800 border-slate-600 text-slate-100 min-h-[100px]" 
-                                placeholder="Digite as observações..."
+                                placeholder="Adicione notas internas sobre este lead..."
                               />
                             </FormControl>
-                          ) : selectedLead.observacoes ? (
-                            <div className="bg-slate-800 rounded-lg p-4 mt-2">
-                              <p className="text-slate-100 leading-relaxed">{selectedLead.observacoes}</p>
-                            </div>
-                          ) : (
-                            <p className="text-slate-100 font-medium">Nenhuma observação</p>
                           )}
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+                    
+                    {/* Histórico de Observações */}
+                    <ObservacoesHistory leadId={selectedLead.id} />
                     {selectedLead.motivo_desqualificacao && (
                       <div>
                         <Label className="text-sm font-medium text-slate-300">Motivo da Desqualificação</Label>
