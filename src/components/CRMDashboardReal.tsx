@@ -18,6 +18,7 @@ import { FollowUpModal } from '@/components/FollowUpModal';
 import { useBulkFollowUpManager } from '@/hooks/useBulkFollowUpManager';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Play, Pause } from 'lucide-react';
+import { getEstadoFromTelefone } from '@/lib/utils';
 
 const getCategoryStyle = (category: string | null) => {
   switch (category) {
@@ -533,7 +534,7 @@ const CRMDashboardReal: React.FC = () => {
                         </td>
                         <td className="py-4 px-4">
                           <span className="text-sm font-medium text-foreground">
-                            {lead.estado || '-'}
+                            {getEstadoFromTelefone(lead.telefone) || lead.estado || '-'}
                           </span>
                         </td>
                         <td className="py-4 px-4">
@@ -635,7 +636,7 @@ const CRMDashboardReal: React.FC = () => {
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-slate-300">Estado</Label>
-                    <p className="text-slate-100 font-medium">{selectedLead.estado || 'Não informado'}</p>
+                    <p className="text-slate-100 font-medium">{getEstadoFromTelefone(selectedLead.telefone) || selectedLead.estado || 'Não informado'}</p>
                   </div>
                   {selectedLead.data_compra && (
                     <div>
