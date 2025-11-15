@@ -711,6 +711,7 @@ export type Database = {
       }
       leads_roger: {
         Row: {
+          campanha: string | null
           categoria_lead: string | null
           cobranca_judicial: string | null
           created_at: string | null
@@ -718,14 +719,17 @@ export type Database = {
           deleted_at: string | null
           email: string | null
           estado: string | null
+          etapa_atual: string | null
           followup_1: string | null
           followup_2: string | null
           followup_3: string | null
           id: string
           instancia: string | null
+          last_interaction: string | null
           motivo_cancelamento: string | null
           motivo_desqualificacao: string | null
           nome_lead: string | null
+          phone_last_8: string | null
           potencial_recuperacao: string | null
           prioridade_atendimento: number | null
           proposta_recomendada: string | null
@@ -742,10 +746,12 @@ export type Database = {
           tipo_caso: string | null
           tipo_financiamento: string | null
           updated_at: string | null
+          user_number: string | null
           valor_estimado_recuperacao: number | null
           valor_pago: number | null
         }
         Insert: {
+          campanha?: string | null
           categoria_lead?: string | null
           cobranca_judicial?: string | null
           created_at?: string | null
@@ -753,14 +759,17 @@ export type Database = {
           deleted_at?: string | null
           email?: string | null
           estado?: string | null
+          etapa_atual?: string | null
           followup_1?: string | null
           followup_2?: string | null
           followup_3?: string | null
           id?: string
           instancia?: string | null
+          last_interaction?: string | null
           motivo_cancelamento?: string | null
           motivo_desqualificacao?: string | null
           nome_lead?: string | null
+          phone_last_8?: string | null
           potencial_recuperacao?: string | null
           prioridade_atendimento?: number | null
           proposta_recomendada?: string | null
@@ -777,10 +786,12 @@ export type Database = {
           tipo_caso?: string | null
           tipo_financiamento?: string | null
           updated_at?: string | null
+          user_number?: string | null
           valor_estimado_recuperacao?: number | null
           valor_pago?: number | null
         }
         Update: {
+          campanha?: string | null
           categoria_lead?: string | null
           cobranca_judicial?: string | null
           created_at?: string | null
@@ -788,14 +799,17 @@ export type Database = {
           deleted_at?: string | null
           email?: string | null
           estado?: string | null
+          etapa_atual?: string | null
           followup_1?: string | null
           followup_2?: string | null
           followup_3?: string | null
           id?: string
           instancia?: string | null
+          last_interaction?: string | null
           motivo_cancelamento?: string | null
           motivo_desqualificacao?: string | null
           nome_lead?: string | null
+          phone_last_8?: string | null
           potencial_recuperacao?: string | null
           prioridade_atendimento?: number | null
           proposta_recomendada?: string | null
@@ -812,6 +826,7 @@ export type Database = {
           tipo_caso?: string | null
           tipo_financiamento?: string | null
           updated_at?: string | null
+          user_number?: string | null
           valor_estimado_recuperacao?: number | null
           valor_pago?: number | null
         }
