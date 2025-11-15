@@ -73,11 +73,11 @@ export const useChatConversations = () => {
         const telefoneCompleto = cleanPhoneNumber(conv.session_id);
         const last8Digits = telefoneCompleto.slice(-8);
 
-        // Buscar dados do lead
+        // Buscar dados do lead com fallback
         const { data: leadData } = await supabase
           .from('leads_roger')
           .select('nome_lead, campanha, status_lead')
-          .eq('phone_last_8', last8Digits)
+          .or(`phone_last_8.eq.${last8Digits},user_number.eq.${telefoneCompleto},telefone.eq.${telefoneCompleto}`)
           .maybeSingle();
 
         if (leadData) {
@@ -122,7 +122,7 @@ export const useChatConversations = () => {
     const { data: leadData } = await supabase
       .from('leads_roger')
       .select('nome_lead, campanha, status_lead')
-      .eq('phone_last_8', last8Digits)
+      .or(`phone_last_8.eq.${last8Digits},user_number.eq.${telefoneCompleto},telefone.eq.${telefoneCompleto}`)
       .maybeSingle();
 
     const { data: blockData } = await supabase
