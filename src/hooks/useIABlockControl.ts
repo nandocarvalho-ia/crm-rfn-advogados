@@ -10,7 +10,11 @@ export const useIABlockControl = () => {
   const [isSending, setIsSending] = useState(false);
 
   const cleanPhoneNumber = (sessionId: string): string => {
-    return sessionId.replace('@s.whatsapp.net', '');
+    return sessionId
+      .replace('@s.whatsapp.net', '')
+      .replace(/roger$/, '')
+      .replace(/kamoi$/, '')
+      .replace(/viam$/, '');
   };
 
   const toggleIAMutation = useMutation({
