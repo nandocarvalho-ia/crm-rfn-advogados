@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useChatConversations } from '@/hooks/useChatConversations';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ConversationsList } from '@/components/chat/ConversationsList';
 import { ChatArea } from '@/components/chat/ChatArea';
-import { MessageSquare, Loader2 } from 'lucide-react';
+import { MessageSquare, Loader2, ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 const ChatAoVivo = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { conversations, loading, error } = useChatConversations();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const isMobile = useIsMobile();
@@ -96,6 +98,15 @@ const ChatAoVivo = () => {
         )}>
           {/* Header */}
           <div className="p-4 border-b">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="mb-2 flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Voltar ao Dashboard
+            </Button>
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <MessageSquare className="h-5 w-5" />
               Chat ao Vivo - RFN Advogados
