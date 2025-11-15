@@ -12,11 +12,8 @@ const parseTimestamp = (input: any): Date => {
 };
 
 const cleanPhoneNumber = (sessionId: string): string => {
-  return sessionId
-    .replace('@s.whatsapp.net', '')
-    .replace(/roger$/, '')
-    .replace(/kamoi$/, '')
-    .replace(/viam$/, '');
+  // Apenas remove @s.whatsapp.net, não precisa mais remover sufixos roger/kamoi/viam
+  return sessionId.replace('@s.whatsapp.net', '');
 };
 
 export interface Conversation {
@@ -66,39 +63,51 @@ export const useChatConversations = () => {
         }
       }
 
-      // Enriquecer com dados de leads
       const conversationsArray = Array.from(conversationsMap.values()) as Conversation[];
+      
+      // Extrair todos os telefones únicos
+      const allPhones = conversationsArray.map(conv => cleanPhoneNumber(conv.session_id));
+      const uniquePhones = [...new Set(allPhones)];
+      const last8DigitsArray = uniquePhones.map(phone => phone.slice(-8));
 
+      // Buscar todos os leads de uma vez
+      const { data: leadsData } = await supabase
+        .from('leads_roger')
+        .select('nome_lead, campanha, status_lead, phone_last_8, user_number, telefone')
+        .or(uniquePhones.map(phone => `user_number.eq.${phone},telefone.eq.${phone}`).join(','))
+        .in('phone_last_8', last8DigitsArray);
+
+      // Buscar todos os status de bloqueio de uma vez
+      const { data: blockDataArray } = await supabase
+        .from('[FLUXO] • IA')
+        .select('TELEFONE, ATENDENTE')
+        .in('TELEFONE', uniquePhones)
+        .eq('INSTÂNCIA', 'roger');
+
+      // Criar maps para lookup rápido
+      const leadsMap = new Map();
+      leadsData?.forEach(lead => {
+        const keys = [lead.phone_last_8, lead.user_number, lead.telefone?.toString()].filter(Boolean);
+        keys.forEach(key => leadsMap.set(key, lead));
+      });
+
+      const blockMap = new Map();
+      blockDataArray?.forEach(block => {
+        blockMap.set(block.TELEFONE, block.ATENDENTE === 'HUMANO');
+      });
+
+      // Enriquecer conversações com os dados
       for (const conv of conversationsArray) {
         const telefoneCompleto = cleanPhoneNumber(conv.session_id);
         const last8Digits = telefoneCompleto.slice(-8);
 
-        // Buscar dados do lead com fallback
-        const { data: leadData } = await supabase
-          .from('leads_roger')
-          .select('nome_lead, campanha, status_lead')
-          .or(`phone_last_8.eq.${last8Digits},user_number.eq.${telefoneCompleto},telefone.eq.${telefoneCompleto}`)
-          .maybeSingle();
-
-        if (leadData) {
-          conv.user_name = leadData.nome_lead || 'Sem nome';
-          conv.campanha = leadData.campanha;
-          conv.lead_stage = leadData.status_lead;
-        } else {
-          conv.user_name = 'Sem nome';
-        }
-
-        // Buscar status de bloqueio da IA
-        const telefoneCompletoClean = cleanPhoneNumber(conv.session_id);
-        const { data: blockData } = await supabase
-          .from('[FLUXO] • IA')
-          .select('ATENDENTE')
-          .eq('TELEFONE', telefoneCompletoClean)
-          .eq('INSTÂNCIA', 'roger')
-          .maybeSingle();
-
-        conv.is_ia_blocked = blockData?.ATENDENTE === 'HUMANO';
-        conv.telefone_limpo = telefoneCompletoClean;
+        const leadData = leadsMap.get(telefoneCompleto) || leadsMap.get(last8Digits);
+        
+        conv.user_name = leadData?.nome_lead || 'Sem nome';
+        conv.campanha = leadData?.campanha;
+        conv.lead_stage = leadData?.status_lead;
+        conv.is_ia_blocked = blockMap.get(telefoneCompleto) || false;
+        conv.telefone_limpo = telefoneCompleto;
       }
 
       conversationsArray.sort((a, b) => 
@@ -172,6 +181,21 @@ export const useChatConversations = () => {
     // Real-time: mudanças no controle de IA
     const iaChannel = supabase
       .channel('ia_bloqueada_changes_roger')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: '[FLUXO] • IA',
+        filter: 'INSTÂNCIA=eq.roger'
+      }, (payload) => {
+        const telefone = payload.new.TELEFONE;
+        const isBlocked = payload.new.ATENDENTE === 'HUMANO';
+
+        setConversations(prev => prev.map(conv => 
+          conv.telefone_limpo === telefone 
+            ? { ...conv, is_ia_blocked: isBlocked }
+            : conv
+        ));
+      })
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',

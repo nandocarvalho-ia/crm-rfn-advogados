@@ -18,11 +18,16 @@ export const ChatArea = ({ conversation, onBack }: ChatAreaProps) => {
   const { messages, loading, error, refetch } = useChatMessages(conversation.session_id);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Auto-scroll to bottom when messages change or conversation changes
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      const scrollElement = scrollRef.current;
+      // Use setTimeout to ensure DOM is updated
+      setTimeout(() => {
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+      }, 0);
     }
-  }, [messages]);
+  }, [messages, conversation.session_id]);
 
   if (error) {
     return (
