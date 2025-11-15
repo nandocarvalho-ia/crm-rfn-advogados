@@ -11,6 +11,14 @@ const parseTimestamp = (input: any): Date => {
   return new Date();
 };
 
+const cleanPhoneNumber = (sessionId: string): string => {
+  return sessionId
+    .replace('@s.whatsapp.net', '')
+    .replace(/roger$/, '')
+    .replace(/kamoi$/, '')
+    .replace(/viam$/, '');
+};
+
 export interface Conversation {
   session_id: string;
   telefone_limpo: string;
@@ -62,7 +70,8 @@ export const useChatConversations = () => {
       const conversationsArray = Array.from(conversationsMap.values()) as Conversation[];
 
       for (const conv of conversationsArray) {
-        const last8Digits = conv.session_id.slice(-8);
+        const telefoneCompleto = cleanPhoneNumber(conv.session_id);
+        const last8Digits = telefoneCompleto.slice(-8);
 
         // Buscar dados do lead
         const { data: leadData } = await supabase
@@ -80,15 +89,15 @@ export const useChatConversations = () => {
         }
 
         // Buscar status de bloqueio da IA
-        const telefoneCompleto = conv.session_id.replace('@s.whatsapp.net', '');
+        const telefoneCompletoClean = cleanPhoneNumber(conv.session_id);
         const { data: blockData } = await supabase
           .from('[FLUXO] • IA')
           .select('ATENDENTE')
-          .eq('TELEFONE', telefoneCompleto)
+          .eq('TELEFONE', telefoneCompletoClean)
           .maybeSingle();
 
         conv.is_ia_blocked = blockData?.ATENDENTE === 'HUMANO';
-        conv.telefone_limpo = telefoneCompleto;
+        conv.telefone_limpo = telefoneCompletoClean;
       }
 
       conversationsArray.sort((a, b) => 
@@ -107,7 +116,8 @@ export const useChatConversations = () => {
 
   const updateConversationFromMessage = async (payload: any) => {
     const sessionId = payload.new.session_id;
-    const last8Digits = sessionId.slice(-8);
+    const telefoneCompleto = cleanPhoneNumber(sessionId);
+    const last8Digits = telefoneCompleto.slice(-8);
 
     const { data: leadData } = await supabase
       .from('leads_roger')
@@ -115,7 +125,6 @@ export const useChatConversations = () => {
       .eq('phone_last_8', last8Digits)
       .maybeSingle();
 
-    const telefoneCompleto = sessionId.replace('@s.whatsapp.net', '');
     const { data: blockData } = await supabase
       .from('[FLUXO] • IA')
       .select('ATENDENTE')
