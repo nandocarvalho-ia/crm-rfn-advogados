@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-import { Users, TrendingUp, Star, DollarSign, MessageCircle, X, Search, Loader2, CalendarIcon, AlertCircle, UserPlus, Trash2, Play, Pause, Pencil, Save, X as XIcon } from 'lucide-react';
+import { Users, TrendingUp, Star, DollarSign, MessageCircle, MessageSquare, X, Search, Loader2, CalendarIcon, AlertCircle, UserPlus, Trash2, Play, Pause, Pencil, Save, X as XIcon } from 'lucide-react';
 import { format, subDays, subHours, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useForm } from 'react-hook-form';
@@ -126,6 +127,7 @@ const leadCreateSchema = z.object({
 type LeadCreateFormData = z.infer<typeof leadCreateSchema>;
 
 const CRMDashboardReal: React.FC = () => {
+  const navigate = useNavigate();
   const {
     leads,
     isLoading,
@@ -475,6 +477,15 @@ const CRMDashboardReal: React.FC = () => {
               >
                 <UserPlus className="h-4 w-4" />
                 Novo Lead
+              </Button>
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={() => navigate('/chat-ao-vivo')}
+                className="gap-2 bg-blue-600 hover:bg-blue-700"
+              >
+                <MessageSquare className="h-4 w-4" />
+                Chat ao Vivo
               </Button>
               <Button 
                 variant="outline" 
