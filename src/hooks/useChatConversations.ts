@@ -94,6 +94,7 @@ export const useChatConversations = () => {
           .from('[FLUXO] • IA')
           .select('ATENDENTE')
           .eq('TELEFONE', telefoneCompletoClean)
+          .eq('INSTÂNCIA', 'roger')
           .maybeSingle();
 
         conv.is_ia_blocked = blockData?.ATENDENTE === 'HUMANO';
@@ -129,6 +130,7 @@ export const useChatConversations = () => {
       .from('[FLUXO] • IA')
       .select('ATENDENTE')
       .eq('TELEFONE', telefoneCompleto)
+      .eq('INSTÂNCIA', 'roger')
       .maybeSingle();
 
     const newConv: Conversation = {
@@ -173,7 +175,8 @@ export const useChatConversations = () => {
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
-        table: '[FLUXO] • IA'
+        table: '[FLUXO] • IA',
+        filter: 'INSTÂNCIA=eq.roger'
       }, (payload) => {
         const telefone = payload.new.TELEFONE;
         const isBlocked = payload.new.ATENDENTE === 'HUMANO';

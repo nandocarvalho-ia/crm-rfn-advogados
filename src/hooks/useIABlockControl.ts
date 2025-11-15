@@ -26,6 +26,7 @@ export const useIABlockControl = () => {
         .from('[FLUXO] • IA')
         .select('TELEFONE')
         .eq('TELEFONE', telefone)
+        .eq('INSTÂNCIA', 'roger')
         .single();
       
       if (selectError && selectError.code !== 'PGRST116') {
@@ -37,7 +38,8 @@ export const useIABlockControl = () => {
         const { error } = await supabase
           .from('[FLUXO] • IA')
           .update({ ATENDENTE: atendente } as any)
-          .eq('TELEFONE', telefone);
+          .eq('TELEFONE', telefone)
+          .eq('INSTÂNCIA', 'roger');
         
         if (error) throw error;
       } else {
@@ -47,7 +49,8 @@ export const useIABlockControl = () => {
           .insert({ 
             TELEFONE: telefone,
             ATENDENTE: atendente,
-            NOME: nome || null
+            NOME: nome || null,
+            'INSTÂNCIA': 'roger'
           } as any);
         
         if (error) throw error;
@@ -106,6 +109,7 @@ export const useIABlockControl = () => {
           DATA: new Date().toISOString()
         } as any)
         .eq('TELEFONE', telefone)
+        .eq('INSTÂNCIA', 'roger')
         .select();
 
       if (!updateData || updateData.length === 0) {
@@ -114,7 +118,8 @@ export const useIABlockControl = () => {
           .insert({
             ATENDENTE: 'HUMANO',
             TELEFONE: telefone,
-            NOME: nomeAtualizado
+            NOME: nomeAtualizado,
+            'INSTÂNCIA': 'roger'
           } as any);
 
         if (insertError) {
@@ -149,7 +154,8 @@ export const useIABlockControl = () => {
       const { error } = await supabase
         .from('[FLUXO] • IA')
         .update({ ATENDENTE: 'IA' } as any)
-        .eq('TELEFONE', telefone);
+        .eq('TELEFONE', telefone)
+        .eq('INSTÂNCIA', 'roger');
 
       if (error) throw error;
 
@@ -234,6 +240,7 @@ export const useIABlockControl = () => {
         .from('[FLUXO] • IA')
         .select('ATENDENTE')
         .eq('TELEFONE', telefone)
+        .eq('INSTÂNCIA', 'roger')
         .maybeSingle();
 
       return data?.ATENDENTE === 'HUMANO';
