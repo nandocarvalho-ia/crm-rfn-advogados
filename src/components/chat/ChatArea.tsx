@@ -16,16 +16,16 @@ interface ChatAreaProps {
 
 export const ChatArea = ({ conversation, onBack }: ChatAreaProps) => {
   const { messages, loading, error, refetch } = useChatMessages(conversation.session_id);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when messages change or conversation changes
   useEffect(() => {
-    if (scrollRef.current) {
-      const scrollElement = scrollRef.current;
-      // Use setTimeout to ensure DOM is updated
-      setTimeout(() => {
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-      }, 0);
+    if (viewportRef.current) {
+      const el = viewportRef.current;
+      // Ensure DOM updated before scrolling
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight;
+      });
     }
   }, [messages, conversation.session_id]);
 
@@ -47,7 +47,7 @@ export const ChatArea = ({ conversation, onBack }: ChatAreaProps) => {
     <div className="flex flex-col h-full bg-background">
       <ChatHeader conversation={conversation} onBack={onBack} />
 
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+      <ScrollArea className="flex-1 p-4" viewportRef={viewportRef}>
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (

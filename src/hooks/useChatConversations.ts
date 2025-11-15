@@ -39,12 +39,13 @@ export const useChatConversations = () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      // Buscar mensagens recentes (usando timestamp ao invés de updated_at)
+      // Buscar mensagens recentes (somente campos necessários)
       const { data: messages, error: messagesError } = await supabase
         .from('n8n_chat_histories_roger')
-        .select('*')
+        .select('id, session_id, message, timestamp')
         .gte('timestamp', thirtyDaysAgo.toISOString())
-        .order('timestamp', { ascending: false });
+        .order('timestamp', { ascending: false })
+        .limit(2000);
 
       if (messagesError) throw messagesError;
 
@@ -70,11 +71,10 @@ export const useChatConversations = () => {
       const uniquePhones = [...new Set(allPhones)];
       const last8DigitsArray = uniquePhones.map(phone => phone.slice(-8));
 
-      // Buscar todos os leads de uma vez
+      // Buscar todos os leads de uma vez usando os últimos 8 dígitos
       const { data: leadsData } = await supabase
         .from('leads_roger')
-        .select('nome_lead, campanha, status_lead, phone_last_8, user_number, telefone')
-        .or(uniquePhones.map(phone => `user_number.eq.${phone},telefone.eq.${phone}`).join(','))
+        .select('nome_lead, campanha, status_lead, phone_last_8')
         .in('phone_last_8', last8DigitsArray);
 
       // Buscar todos os status de bloqueio de uma vez
@@ -85,10 +85,9 @@ export const useChatConversations = () => {
         .eq('INSTÂNCIA', 'roger');
 
       // Criar maps para lookup rápido
-      const leadsMap = new Map();
+      const leadsMap = new Map<string, any>();
       leadsData?.forEach(lead => {
-        const keys = [lead.phone_last_8, lead.user_number, lead.telefone?.toString()].filter(Boolean);
-        keys.forEach(key => leadsMap.set(key, lead));
+        if (lead.phone_last_8) leadsMap.set(lead.phone_last_8, lead);
       });
 
       const blockMap = new Map();
@@ -101,7 +100,7 @@ export const useChatConversations = () => {
         const telefoneCompleto = cleanPhoneNumber(conv.session_id);
         const last8Digits = telefoneCompleto.slice(-8);
 
-        const leadData = leadsMap.get(telefoneCompleto) || leadsMap.get(last8Digits);
+        const leadData = leadsMap.get(last8Digits);
         
         conv.user_name = leadData?.nome_lead || 'Sem nome';
         conv.campanha = leadData?.campanha;
