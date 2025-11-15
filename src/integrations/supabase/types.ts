@@ -193,6 +193,57 @@ export type Database = {
         }
         Relationships: []
       }
+      clientes: {
+        Row: {
+          apiopenai: string | null
+          cidade: string | null
+          cnpj: string | null
+          created_at: string | null
+          email: string | null
+          estado: string | null
+          imgprompt: string | null
+          instagram: string | null
+          instancia: string
+          nome_agente: string | null
+          nome_empresa: string
+          primeira_mensagem: string | null
+          telefone: string
+          updated_at: string | null
+        }
+        Insert: {
+          apiopenai?: string | null
+          cidade?: string | null
+          cnpj?: string | null
+          created_at?: string | null
+          email?: string | null
+          estado?: string | null
+          imgprompt?: string | null
+          instagram?: string | null
+          instancia: string
+          nome_agente?: string | null
+          nome_empresa: string
+          primeira_mensagem?: string | null
+          telefone: string
+          updated_at?: string | null
+        }
+        Update: {
+          apiopenai?: string | null
+          cidade?: string | null
+          cnpj?: string | null
+          created_at?: string | null
+          email?: string | null
+          estado?: string | null
+          imgprompt?: string | null
+          instagram?: string | null
+          instancia?: string
+          nome_agente?: string | null
+          nome_empresa?: string
+          primeira_mensagem?: string | null
+          telefone?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       conjuntos_anuncios: {
         Row: {
           adset_id: string
@@ -550,6 +601,114 @@ export type Database = {
         }
         Relationships: []
       }
+      leads_kamoi: {
+        Row: {
+          categoria_lead: string | null
+          cobranca_judicial: string | null
+          created_at: string | null
+          data_compra: string | null
+          deleted_at: string | null
+          email: string | null
+          estado: string | null
+          followup_1: string | null
+          followup_2: string | null
+          followup_3: string | null
+          id: string
+          instancia: string | null
+          motivo_cancelamento: string | null
+          motivo_desqualificacao: string | null
+          nome_lead: string | null
+          potencial_recuperacao: string | null
+          prioridade_atendimento: number | null
+          proposta_recomendada: string | null
+          qualificado_automaticamente: string | null
+          resumo_ia: string | null
+          score_total: number | null
+          situacao_parcelas: string | null
+          status_imovel: string | null
+          status_lead: string | null
+          status_qualificacao: string | null
+          telefone: number
+          tem_construcao: string | null
+          tempo_pagando_meses: string | null
+          tipo_caso: string | null
+          tipo_financiamento: string | null
+          updated_at: string | null
+          valor_estimado_recuperacao: number | null
+          valor_pago: number | null
+        }
+        Insert: {
+          categoria_lead?: string | null
+          cobranca_judicial?: string | null
+          created_at?: string | null
+          data_compra?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          estado?: string | null
+          followup_1?: string | null
+          followup_2?: string | null
+          followup_3?: string | null
+          id?: string
+          instancia?: string | null
+          motivo_cancelamento?: string | null
+          motivo_desqualificacao?: string | null
+          nome_lead?: string | null
+          potencial_recuperacao?: string | null
+          prioridade_atendimento?: number | null
+          proposta_recomendada?: string | null
+          qualificado_automaticamente?: string | null
+          resumo_ia?: string | null
+          score_total?: number | null
+          situacao_parcelas?: string | null
+          status_imovel?: string | null
+          status_lead?: string | null
+          status_qualificacao?: string | null
+          telefone: number
+          tem_construcao?: string | null
+          tempo_pagando_meses?: string | null
+          tipo_caso?: string | null
+          tipo_financiamento?: string | null
+          updated_at?: string | null
+          valor_estimado_recuperacao?: number | null
+          valor_pago?: number | null
+        }
+        Update: {
+          categoria_lead?: string | null
+          cobranca_judicial?: string | null
+          created_at?: string | null
+          data_compra?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          estado?: string | null
+          followup_1?: string | null
+          followup_2?: string | null
+          followup_3?: string | null
+          id?: string
+          instancia?: string | null
+          motivo_cancelamento?: string | null
+          motivo_desqualificacao?: string | null
+          nome_lead?: string | null
+          potencial_recuperacao?: string | null
+          prioridade_atendimento?: number | null
+          proposta_recomendada?: string | null
+          qualificado_automaticamente?: string | null
+          resumo_ia?: string | null
+          score_total?: number | null
+          situacao_parcelas?: string | null
+          status_imovel?: string | null
+          status_lead?: string | null
+          status_qualificacao?: string | null
+          telefone?: number
+          tem_construcao?: string | null
+          tempo_pagando_meses?: string | null
+          tipo_caso?: string | null
+          tipo_financiamento?: string | null
+          updated_at?: string | null
+          valor_estimado_recuperacao?: number | null
+          valor_pago?: number | null
+        }
+        Relationships: []
+      }
       leads_roger: {
         Row: {
           categoria_lead: string | null
@@ -681,9 +840,10 @@ export type Database = {
           experiencia_marketing: string | null
           faturamento_mensal: string | null
           id: string
+          instancia: string | null
           investimento_atual_marketing: number | null
           nao_compareceu: boolean | null
-          nome: string | null
+          nome_lead: string | null
           observacoes: string | null
           origem: string
           principal_desafio: string | null
@@ -697,6 +857,7 @@ export type Database = {
           telefone: string
           tem_orcamento_marketing: boolean | null
           tempo_atuacao: number | null
+          tipo_caso: string
           updated_at: string
           urgencia_solucao: string | null
           utm_campaign: string | null
@@ -727,9 +888,10 @@ export type Database = {
           experiencia_marketing?: string | null
           faturamento_mensal?: string | null
           id?: string
+          instancia?: string | null
           investimento_atual_marketing?: number | null
           nao_compareceu?: boolean | null
-          nome?: string | null
+          nome_lead?: string | null
           observacoes?: string | null
           origem?: string
           principal_desafio?: string | null
@@ -743,6 +905,7 @@ export type Database = {
           telefone: string
           tem_orcamento_marketing?: boolean | null
           tempo_atuacao?: number | null
+          tipo_caso?: string
           updated_at?: string
           urgencia_solucao?: string | null
           utm_campaign?: string | null
@@ -773,9 +936,10 @@ export type Database = {
           experiencia_marketing?: string | null
           faturamento_mensal?: string | null
           id?: string
+          instancia?: string | null
           investimento_atual_marketing?: number | null
           nao_compareceu?: boolean | null
-          nome?: string | null
+          nome_lead?: string | null
           observacoes?: string | null
           origem?: string
           principal_desafio?: string | null
@@ -789,6 +953,7 @@ export type Database = {
           telefone?: string
           tem_orcamento_marketing?: boolean | null
           tempo_atuacao?: number | null
+          tipo_caso?: string
           updated_at?: string
           urgencia_solucao?: string | null
           utm_campaign?: string | null
@@ -976,7 +1141,7 @@ export type Database = {
         }
         Relationships: []
       }
-      n8n_chat_histories_roger: {
+      n8n_chat_histories_: {
         Row: {
           id: number
           message: Json
@@ -991,6 +1156,63 @@ export type Database = {
           id?: number
           message?: Json
           session_id?: string
+        }
+        Relationships: []
+      }
+      n8n_chat_histories_freehands: {
+        Row: {
+          id: number
+          message: Json
+          session_id: string
+        }
+        Insert: {
+          id?: number
+          message: Json
+          session_id: string
+        }
+        Update: {
+          id?: number
+          message?: Json
+          session_id?: string
+        }
+        Relationships: []
+      }
+      n8n_chat_histories_kamoi: {
+        Row: {
+          id: number
+          message: Json
+          session_id: string
+        }
+        Insert: {
+          id?: number
+          message: Json
+          session_id: string
+        }
+        Update: {
+          id?: number
+          message?: Json
+          session_id?: string
+        }
+        Relationships: []
+      }
+      n8n_chat_histories_roger: {
+        Row: {
+          id: number
+          message: Json
+          session_id: string
+          timestamp: string | null
+        }
+        Insert: {
+          id?: number
+          message: Json
+          session_id: string
+          timestamp?: string | null
+        }
+        Update: {
+          id?: number
+          message?: Json
+          session_id?: string
+          timestamp?: string | null
         }
         Relationships: []
       }
@@ -1129,12 +1351,56 @@ export type Database = {
         }
         Relationships: []
       }
-      prompt_roger: {
+      n8n_vectors_transcricoes: {
         Row: {
+          embedding: string | null
+          id: string
+          metadata: Json | null
+          text: string | null
+        }
+        Insert: {
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+          text?: string | null
+        }
+        Update: {
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+          text?: string | null
+        }
+        Relationships: []
+      }
+      n8n_vectors_trasncricoes: {
+        Row: {
+          embedding: string | null
+          id: string
+          metadata: Json | null
+          text: string | null
+        }
+        Insert: {
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+          text?: string | null
+        }
+        Update: {
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+          text?: string | null
+        }
+        Relationships: []
+      }
+      prompt_kamoi: {
+        Row: {
+          APIOPENAI: string | null
           created_at: string | null
           identidade: string
+          numero: number
           objecoes: string
-          regra_fundamental: string
+          regra_fundamental: string | null
           regras_finais: string
           script: string
           tipo: string
@@ -1143,10 +1409,12 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          APIOPENAI?: string | null
           created_at?: string | null
           identidade: string
+          numero: number
           objecoes: string
-          regra_fundamental: string
+          regra_fundamental?: string | null
           regras_finais: string
           script: string
           tipo: string
@@ -1155,10 +1423,147 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          APIOPENAI?: string | null
           created_at?: string | null
           identidade?: string
+          numero?: number
           objecoes?: string
-          regra_fundamental?: string
+          regra_fundamental?: string | null
+          regras_finais?: string
+          script?: string
+          tipo?: string
+          tools?: string
+          transferencia?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      prompt_roger: {
+        Row: {
+          APIOPENAI: string | null
+          created_at: string | null
+          identidade: string
+          numero: number
+          objecoes: string
+          regra_fundamental: string | null
+          regras_finais: string
+          script: string
+          tipo: string
+          tools: string
+          transferencia: string
+          updated_at: string | null
+        }
+        Insert: {
+          APIOPENAI?: string | null
+          created_at?: string | null
+          identidade: string
+          numero: number
+          objecoes: string
+          regra_fundamental?: string | null
+          regras_finais: string
+          script: string
+          tipo: string
+          tools: string
+          transferencia: string
+          updated_at?: string | null
+        }
+        Update: {
+          APIOPENAI?: string | null
+          created_at?: string | null
+          identidade?: string
+          numero?: number
+          objecoes?: string
+          regra_fundamental?: string | null
+          regras_finais?: string
+          script?: string
+          tipo?: string
+          tools?: string
+          transferencia?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      prompt_viam: {
+        Row: {
+          APIOPENAI: string | null
+          created_at: string | null
+          identidade: string
+          numero: number
+          objecoes: string
+          regra_fundamental: string | null
+          regras_finais: string
+          script: string
+          tipo: string
+          tools: string
+          transferencia: string
+          updated_at: string | null
+        }
+        Insert: {
+          APIOPENAI?: string | null
+          created_at?: string | null
+          identidade: string
+          numero: number
+          objecoes: string
+          regra_fundamental?: string | null
+          regras_finais: string
+          script: string
+          tipo: string
+          tools: string
+          transferencia: string
+          updated_at?: string | null
+        }
+        Update: {
+          APIOPENAI?: string | null
+          created_at?: string | null
+          identidade?: string
+          numero?: number
+          objecoes?: string
+          regra_fundamental?: string | null
+          regras_finais?: string
+          script?: string
+          tipo?: string
+          tools?: string
+          transferencia?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      prompt_viam_backup: {
+        Row: {
+          APIOPENAI: string | null
+          created_at: string | null
+          identidade: string
+          numero: number | null
+          objecoes: string
+          regra_fundamental: string | null
+          regras_finais: string
+          script: string
+          tipo: string
+          tools: string
+          transferencia: string
+          updated_at: string | null
+        }
+        Insert: {
+          APIOPENAI?: string | null
+          created_at?: string | null
+          identidade: string
+          numero?: number | null
+          objecoes: string
+          regra_fundamental?: string | null
+          regras_finais: string
+          script: string
+          tipo: string
+          tools: string
+          transferencia: string
+          updated_at?: string | null
+        }
+        Update: {
+          APIOPENAI?: string | null
+          created_at?: string | null
+          identidade?: string
+          numero?: number | null
+          objecoes?: string
+          regra_fundamental?: string | null
           regras_finais?: string
           script?: string
           tipo?: string
@@ -1441,22 +1846,12 @@ export type Database = {
         Args: { lead_uuid: string; novo_estagio: string }
         Returns: boolean
       }
-      binary_quantize: {
-        Args: { "": string } | { "": unknown }
-        Returns: unknown
-      }
       buscar_ou_criar_lead_whatsapp: {
         Args: { nome_param?: string; telefone_param: string }
         Returns: string
       }
-      calcular_atraso_meses: {
-        Args: { data_entrega: string }
-        Returns: number
-      }
-      calcular_score_lead: {
-        Args: { lead_uuid: string }
-        Returns: number
-      }
+      calcular_atraso_meses: { Args: { data_entrega: string }; Returns: number }
+      calcular_score_lead: { Args: { lead_uuid: string }; Returns: number }
       classifica_lead_completo: {
         Args: { dados_json: Json; lead_uuid: string }
         Returns: {
@@ -1467,86 +1862,16 @@ export type Database = {
           success: boolean
         }[]
       }
-      classificar_lead: {
-        Args: { lead_uuid: string }
-        Returns: string
-      }
+      classificar_lead: { Args: { lead_uuid: string }; Returns: string }
       criar_lead_minimo: {
         Args: { origem_param?: string; telefone_param: string }
         Returns: string
-      }
-      halfvec_avg: {
-        Args: { "": number[] }
-        Returns: unknown
-      }
-      halfvec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      halfvec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      halfvec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      hnsw_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_sparsevec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnswhandler: {
-        Args: { "": unknown }
-        Returns: unknown
       }
       is_business_hours: {
         Args: { fim?: string; inicio?: string }
         Returns: boolean
       }
-      ivfflat_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflathandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      l2_norm: {
-        Args: { "": unknown } | { "": unknown }
-        Returns: number
-      }
-      l2_normalize: {
-        Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
-      }
-      processar_webhook_meta: {
-        Args: { webhook_data: Json }
-        Returns: Json
-      }
-      sparsevec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      sparsevec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      sparsevec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
+      processar_webhook_meta: { Args: { webhook_data: Json }; Returns: Json }
       sugerir_proxima_acao: {
         Args: { lead_uuid: string }
         Returns: {
@@ -1559,30 +1884,6 @@ export type Database = {
       upsert_estrutura_meta: {
         Args: { ad_data?: Json; adset_data?: Json; campanha_data: Json }
         Returns: Json
-      }
-      vector_avg: {
-        Args: { "": number[] }
-        Returns: string
-      }
-      vector_dims: {
-        Args: { "": string } | { "": unknown }
-        Returns: number
-      }
-      vector_norm: {
-        Args: { "": string }
-        Returns: number
-      }
-      vector_out: {
-        Args: { "": string }
-        Returns: unknown
-      }
-      vector_send: {
-        Args: { "": string }
-        Returns: string
-      }
-      vector_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
       }
     }
     Enums: {
