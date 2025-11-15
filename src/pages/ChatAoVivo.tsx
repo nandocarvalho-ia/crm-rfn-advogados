@@ -18,8 +18,8 @@ const ChatAoVivo = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterByPhone, setFilterByPhone] = useState('');
   const [filterByName, setFilterByName] = useState('');
-  const [filterByCampaign, setFilterByCampaign] = useState('');
-  const [filterByIAStatus, setFilterByIAStatus] = useState('');
+  const [filterByCampaign, setFilterByCampaign] = useState('all');
+  const [filterByIAStatus, setFilterByIAStatus] = useState('all');
 
   // Normalização de texto
   const normalizeText = (text: string) => {
@@ -41,7 +41,7 @@ const ChatAoVivo = () => {
     if (filterByPhone && !normalizePhone(conv.telefone_limpo).includes(normalizePhone(filterByPhone))) {
       return false;
     }
-    if (filterByCampaign && conv.campanha !== filterByCampaign) {
+    if (filterByCampaign && filterByCampaign !== 'all' && conv.campanha !== filterByCampaign) {
       return false;
     }
     if (filterByIAStatus === 'ia' && conv.is_ia_blocked) {
@@ -123,7 +123,7 @@ const ChatAoVivo = () => {
                 <SelectValue placeholder="Todos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="ia">🤖 IA Rafael</SelectItem>
                 <SelectItem value="humano">👤 Humano</SelectItem>
               </SelectContent>
