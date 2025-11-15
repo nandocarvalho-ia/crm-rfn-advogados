@@ -199,7 +199,7 @@ export const useIABlockControl = () => {
       const { error: insertError } = await supabase
         .from('n8n_chat_histories_roger')
         .insert({
-          session_id: telefone,
+          session_id: sessionId,
           message: {
             type: 'ai',
             content: mensagem,
