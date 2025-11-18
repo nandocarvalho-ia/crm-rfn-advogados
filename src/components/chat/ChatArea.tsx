@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useChatMessages } from '@/hooks/useChatMessages';
@@ -12,21 +12,18 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 interface ChatAreaProps {
   conversation: Conversation;
   onBack?: () => void;
+  onControlChange?: () => void;
 }
 
-export const ChatArea = ({ conversation, onBack }: ChatAreaProps) => {
+export const ChatArea = ({ conversation, onBack, onControlChange }: ChatAreaProps) => {
   const { messages, loading, error, refetch } = useChatMessages(conversation.session_id);
-  const viewportRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when messages change or conversation changes
-  useEffect(() => {
-    if (viewportRef.current) {
-      const el = viewportRef.current;
-      // Ensure DOM updated before scrolling
-      requestAnimationFrame(() => {
-        el.scrollTop = el.scrollHeight;
-      });
-    }
+  // Auto-scroll robusto: rola para o bottomRef sempre que mensagens mudam
+  useLayoutEffect(() => {
+    requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({ block: 'end' });
+    });
   }, [messages, conversation.session_id]);
 
   if (error) {
@@ -47,7 +44,7 @@ export const ChatArea = ({ conversation, onBack }: ChatAreaProps) => {
     <div className="flex flex-col h-full bg-background">
       <ChatHeader conversation={conversation} onBack={onBack} />
 
-      <ScrollArea className="flex-1 p-4" viewportRef={viewportRef}>
+      <ScrollArea className="flex-1 p-4">
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
@@ -65,11 +62,12 @@ export const ChatArea = ({ conversation, onBack }: ChatAreaProps) => {
             {messages.map((message) => (
               <MessageBubble key={message.id} message={message} />
             ))}
+            <div ref={bottomRef} />
           </div>
         )}
       </ScrollArea>
 
-      <ChatControls conversation={conversation} onMessageSent={refetch} />
+      <ChatControls conversation={conversation} onMessageSent={refetch} onControlChange={onControlChange} />
     </div>
   );
 };

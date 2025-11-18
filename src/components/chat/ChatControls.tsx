@@ -8,9 +8,10 @@ import { Conversation } from '@/hooks/useChatConversations';
 interface ChatControlsProps {
   conversation: Conversation;
   onMessageSent: () => void;
+  onControlChange?: () => void;
 }
 
-export const ChatControls = ({ conversation, onMessageSent }: ChatControlsProps) => {
+export const ChatControls = ({ conversation, onMessageSent, onControlChange }: ChatControlsProps) => {
   const [message, setMessage] = useState('');
   const { assumirConversa, devolverParaIA, sendHumanMessage, isSending } = useIABlockControl();
 
@@ -34,12 +35,14 @@ export const ChatControls = ({ conversation, onMessageSent }: ChatControlsProps)
   const handleAssumirConversa = async () => {
     const success = await assumirConversa(conversation.session_id, conversation.user_name);
     if (success) {
+      onControlChange?.();
       onMessageSent();
     }
   };
 
   const handleDevolverParaIA = async () => {
     await devolverParaIA(conversation.session_id);
+    onControlChange?.();
     onMessageSent();
   };
 

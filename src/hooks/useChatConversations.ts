@@ -69,6 +69,15 @@ export const useChatConversations = () => {
       // Extrair todos os telefones únicos
       const allPhones = conversationsArray.map(conv => cleanPhoneNumber(conv.session_id));
       const uniquePhones = [...new Set(allPhones)];
+      
+      // Se não há telefones, retorna vazio
+      if (uniquePhones.length === 0) {
+        setConversations([]);
+        setError(null);
+        setLoading(false);
+        return;
+      }
+      
       const last8DigitsArray = uniquePhones.map(phone => phone.slice(-8));
 
       // Buscar todos os leads de uma vez usando os últimos 8 dígitos
@@ -177,15 +186,18 @@ export const useChatConversations = () => {
       }, updateConversationFromMessage)
       .subscribe();
 
-    // Real-time: mudanças no controle de IA
+    // Real-time: mudanças no controle de IA (sem filtro INSTÂNCIA)
     const iaChannel = supabase
       .channel('ia_bloqueada_changes_roger')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: '[FLUXO] • IA',
-        filter: 'INSTÂNCIA=eq.roger'
+        table: '[FLUXO] • IA'
       }, (payload) => {
+        // Filtrar no client side
+        const inst = payload.new?.['INSTÂNCIA'];
+        if (inst !== 'roger') return;
+        
         const telefone = payload.new.TELEFONE;
         const isBlocked = payload.new.ATENDENTE === 'HUMANO';
 
@@ -198,9 +210,12 @@ export const useChatConversations = () => {
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
-        table: '[FLUXO] • IA',
-        filter: 'INSTÂNCIA=eq.roger'
+        table: '[FLUXO] • IA'
       }, (payload) => {
+        // Filtrar no client side
+        const inst = payload.new?.['INSTÂNCIA'];
+        if (inst !== 'roger') return;
+        
         const telefone = payload.new.TELEFONE;
         const isBlocked = payload.new.ATENDENTE === 'HUMANO';
 

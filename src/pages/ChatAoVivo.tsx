@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 const ChatAoVivo = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { conversations, loading, error } = useChatConversations();
+  const { conversations, loading, error, refetch } = useChatConversations();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
@@ -157,6 +157,7 @@ const ChatAoVivo = () => {
             <ChatArea
               conversation={selectedConversation}
               onBack={isMobile ? () => setSelectedConversationId(null) : undefined}
+              onControlChange={refetch}
             />
           ) : (
             !isMobile && (
