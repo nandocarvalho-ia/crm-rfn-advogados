@@ -97,13 +97,14 @@ export const useIABlockControl = () => {
         }
       }
 
-      // Atualizar ou inserir na tabela de controle
+      // Atualizar ou inserir na tabela de controle com INSTÂNCIA='roger'
       const { data: updateData, error: updateError } = await supabase
         .from('[FLUXO] • IA')
         .update({ 
           ATENDENTE: 'HUMANO',
           NOME: nomeAtualizado,
-          DATA: new Date().toISOString()
+          DATA: new Date().toISOString(),
+          'INSTÂNCIA': 'roger'
         } as any)
         .eq('TELEFONE', telefone)
         .eq('INSTÂNCIA', 'roger')
@@ -150,7 +151,10 @@ export const useIABlockControl = () => {
 
       const { error } = await supabase
         .from('[FLUXO] • IA')
-        .update({ ATENDENTE: 'IA' } as any)
+        .update({ 
+          ATENDENTE: 'IA',
+          'INSTÂNCIA': 'roger'
+        } as any)
         .eq('TELEFONE', telefone)
         .eq('INSTÂNCIA', 'roger');
 
