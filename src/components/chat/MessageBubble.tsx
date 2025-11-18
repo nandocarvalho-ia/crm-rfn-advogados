@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { ChatMessage } from '@/hooks/useChatMessages';
@@ -30,7 +30,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
             message.isFromLead ? 'text-muted-foreground' : 'text-primary-foreground/70'
           )}
         >
-          {format(message.timestamp, 'HH:mm', { locale: ptBR })}
+          {formatInTimeZone(message.timestamp, 'America/Sao_Paulo', 'HH:mm', { locale: ptBR })}
         </span>
       </div>
     </div>

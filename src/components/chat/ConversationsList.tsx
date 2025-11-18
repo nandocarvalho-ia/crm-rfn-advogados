@@ -1,4 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -39,7 +40,7 @@ export const ConversationsList = ({
             <div className="flex items-start justify-between gap-2 mb-1">
               <h4 className="font-semibold text-sm truncate">{conv.user_name}</h4>
               <span className="text-xs text-muted-foreground shrink-0">
-                {formatDistanceToNow(conv.last_message_timestamp, {
+                {formatDistanceToNow(toZonedTime(conv.last_message_timestamp, 'America/Sao_Paulo'), {
                   addSuffix: true,
                   locale: ptBR,
                 })}
