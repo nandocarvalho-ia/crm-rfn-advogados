@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { fromZonedTime } from 'date-fns-tz';
 
 export interface ChatMessage {
   id: number;
@@ -12,11 +13,30 @@ export interface ChatMessage {
 
 const parseTimestamp = (input: any): Date => {
   if (!input) return new Date();
+
   if (input instanceof Date) return input;
-  if (typeof input === 'string' || typeof input === 'number') {
+
+  if (typeof input === 'string') {
+    try {
+      // Remove o offset no final (+00:00, -03:00 etc.)
+      const withoutOffset = input.replace(/([+-]\d{2}:\d{2})$/, '');
+      const [datePart, timePartRaw] = withoutOffset.split('T');
+      const timePart = (timePartRaw || '00:00:00').slice(0, 8);
+      const localIso = `${datePart}T${timePart}`;
+      
+      // Interpreta esse horário como se fosse em America/Sao_Paulo
+      const date = fromZonedTime(localIso, 'America/Sao_Paulo');
+      return isNaN(date.getTime()) ? new Date() : date;
+    } catch {
+      return new Date();
+    }
+  }
+
+  if (typeof input === 'number') {
     const date = new Date(input);
     return isNaN(date.getTime()) ? new Date() : date;
   }
+
   return new Date();
 };
 
