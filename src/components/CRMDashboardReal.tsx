@@ -540,14 +540,14 @@ const CRMDashboardReal: React.FC = () => {
 
           <Card className="bg-slate-900 border-slate-700 hover:shadow-lg transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-300">Leads Premium</CardTitle>
-              <Star className="h-6 w-6 text-slate-300" />
+              <CardTitle className="text-sm font-medium text-slate-300">Leads Convertidos</CardTitle>
+              <TrendingUp className="h-6 w-6 text-slate-300" />
             </CardHeader>
             <CardContent>
               {isLoading ? (
                 <Skeleton className="h-8 w-16 bg-slate-700" />
               ) : (
-                <div className="text-3xl font-bold text-slate-300">{metrics.premiumLeads}</div>
+                <div className="text-3xl font-bold text-slate-300">{metrics.convertedLeads}</div>
               )}
             </CardContent>
           </Card>
@@ -583,23 +583,6 @@ const CRMDashboardReal: React.FC = () => {
                 </div>
                 
                 <div className="flex flex-col sm:flex-row gap-3 flex-1">
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full sm:w-40 bg-card/60 border-crm-blue/20 hover:border-crm-blue/40 transition-colors">
-                      <SelectValue placeholder="Status">
-                        {statusFilter ? `Status: ${statusFilter}` : "Status"}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Todos">Todos</SelectItem>
-                      <SelectItem value="novo">Novo</SelectItem>
-                      <SelectItem value="conversando">Conversando</SelectItem>
-                      <SelectItem value="convertido">Convertido</SelectItem>
-                      <SelectItem value="qualificando">Qualificando</SelectItem>
-                      <SelectItem value="qualificado">Qualificado</SelectItem>
-                      <SelectItem value="desqualificado">Desqualificado</SelectItem>
-                    </SelectContent>
-                  </Select>
-
                   <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                     <SelectTrigger className="w-full sm:w-40 bg-card/60 border-crm-green/20 hover:border-crm-green/40 transition-colors">
                       <SelectValue placeholder="Categoria">
@@ -614,6 +597,20 @@ const CRMDashboardReal: React.FC = () => {
                       <SelectItem value="Potencial Excelente">Potencial Excelente</SelectItem>
                       <SelectItem value="Excelente">Excelente</SelectItem>
                       <SelectItem value="Desqualificado">Desqualificado</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full sm:w-40 bg-card/60 border-crm-blue/20 hover:border-crm-blue/40 transition-colors">
+                      <SelectValue placeholder="Status">
+                        {statusFilter ? `Status: ${statusFilter}` : "Status"}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Todos">Todos</SelectItem>
+                      <SelectItem value="novo">Novo</SelectItem>
+                      <SelectItem value="conversando">Conversando</SelectItem>
+                      <SelectItem value="convertido">Convertido</SelectItem>
                     </SelectContent>
                   </Select>
 

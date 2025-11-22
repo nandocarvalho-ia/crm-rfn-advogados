@@ -107,17 +107,22 @@ export const useLeadsRoger = () => {
   const metrics = {
     totalLeads: leads.length,
     qualifiedLeads: leads.filter(lead => 
-      lead.status_qualificacao === 'qualificado' || lead.categoria_lead?.startsWith('PREMIUM')
+      (lead.categoria_lead === 'EXCELENTE' || lead.categoria_lead === 'POTENCIAL EXCELENTE') &&
+      lead.status_lead !== 'convertido'
     ).length,
+    convertedLeads: leads.filter(lead => lead.status_lead === 'convertido').length,
     premiumLeads: leads.filter(lead => lead.categoria_lead?.startsWith('PREMIUM')).length,
     totalPotential: leads
-      .filter(lead => lead.status_qualificacao === 'qualificado' || lead.categoria_lead?.startsWith('PREMIUM'))
+      .filter(lead => lead.status_lead === 'convertido')
       .reduce((sum, lead) => {
         const valor = parseFloat(lead.valor_estimado_recuperacao?.toString() || '0');
         return sum + (isNaN(valor) ? 0 : valor);
       }, 0),
     qualificationRate: leads.length > 0 
-      ? ((leads.filter(lead => lead.status_qualificacao === 'qualificado' || lead.categoria_lead?.startsWith('PREMIUM')).length / leads.length) * 100) 
+      ? ((leads.filter(lead => 
+          (lead.categoria_lead === 'EXCELENTE' || lead.categoria_lead === 'POTENCIAL EXCELENTE') &&
+          lead.status_lead !== 'convertido'
+        ).length / leads.length) * 100) 
       : 0,
   };
 
