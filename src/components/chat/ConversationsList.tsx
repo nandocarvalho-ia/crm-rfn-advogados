@@ -1,5 +1,6 @@
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toZonedTime } from 'date-fns-tz';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Conversation } from '@/hooks/useChatConversations';
@@ -39,10 +40,13 @@ export const ConversationsList = ({
             <div className="flex items-start justify-between gap-2 mb-1">
               <h4 className="font-semibold text-sm truncate">{conv.user_name}</h4>
               <span className="text-xs text-muted-foreground shrink-0">
-                {formatDistanceToNow(conv.last_message_timestamp, {
-                  addSuffix: true,
-                  locale: ptBR,
-                })}
+                {formatDistanceToNow(
+                  toZonedTime(conv.last_message_timestamp, 'America/Sao_Paulo'),
+                  {
+                    addSuffix: true,
+                    locale: ptBR,
+                  }
+                )}
               </span>
             </div>
 
