@@ -115,7 +115,7 @@ export const useLeadsRoger = () => {
     totalPotential: leads
       .filter(lead => lead.status_lead === 'convertido')
       .reduce((sum, lead) => {
-        const valor = parseFloat(lead.valor_estimado_recuperacao?.toString() || '0');
+        const valor = parseFloat(lead.valor_pago?.toString() || '0');
         return sum + (isNaN(valor) ? 0 : valor);
       }, 0),
     qualificationRate: leads.length > 0 
