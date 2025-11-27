@@ -65,7 +65,7 @@ export const useLeadsRoger = () => {
       // Combine the data
       return (leadsResult.data || []).map((lead: any) => ({
         ...lead,
-        atendente: fluxoMap.get(lead.telefone) || null
+        atendente: fluxoMap.get(String(lead.telefone)) || null
       })) as LeadRoger[];
     },
   });
