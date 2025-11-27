@@ -848,9 +848,9 @@ const CRMDashboardReal: React.FC = () => {
                               variant="outline" 
                               onClick={e => {
                                 e.stopPropagation();
-                                openFollowUpModal(lead);
+                                navigate(`/chat-ao-vivo?session=${String(lead.telefone)}`);
                               }}
-                              title="Configurar Follow-up"
+                              title="Ver Conversa no Chat"
                             >
                               <MessageCircle className="h-4 w-4" />
                             </Button>
@@ -881,14 +881,27 @@ const CRMDashboardReal: React.FC = () => {
             </DialogTitle>
             <div className="flex gap-2 items-center">
               {!isEditing && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setShowDeleteConfirm(true)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Excluir
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedFollowUpLead(selectedLead);
+                      setFollowUpModalOpen(true);
+                    }}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Follow-up
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setShowDeleteConfirm(true)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Excluir
+                  </Button>
+                </>
               )}
               {!isEditing ? (
                 <Button
