@@ -458,12 +458,31 @@ const CRMDashboardReal: React.FC = () => {
     setSearchTerm('');
     setStatusFilter('Todos');
     setCategoryFilter('Todas');
+    setTipoCasoFilter('Todos');
     setDateFilter('all');
     setCustomDateRange({
       startTime: '00:00',
       endTime: '23:59'
     });
   };
+
+  // KPIs computed from filtered leads
+  const filteredMetrics = useMemo(() => {
+    const totalLeads = filteredLeads.length;
+    const qualifiedLeads = filteredLeads.filter(lead => 
+      (lead.categoria_lead === 'EXCELENTE' || lead.categoria_lead === 'POTENCIAL EXCELENTE') &&
+      lead.status_lead !== 'convertido'
+    ).length;
+    const convertedLeads = filteredLeads.filter(lead => lead.status_lead === 'convertido').length;
+    const totalPotential = filteredLeads
+      .filter(lead => lead.status_lead === 'convertido')
+      .reduce((sum, lead) => {
+        const valor = parseFloat(lead.valor_pago?.toString() || '0');
+        return sum + (isNaN(valor) ? 0 : valor);
+      }, 0);
+    const qualificationRate = totalLeads > 0 ? (qualifiedLeads / totalLeads) * 100 : 0;
+    return { totalLeads, qualifiedLeads, convertedLeads, totalPotential, qualificationRate };
+  }, [filteredLeads]);
 
   const openLeadModal = (lead: LeadRoger) => {
     setSelectedLead(lead);
