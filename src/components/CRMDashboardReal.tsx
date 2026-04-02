@@ -582,9 +582,9 @@ const CRMDashboardReal: React.FC = () => {
                 <Skeleton className="h-8 w-16 bg-slate-700" />
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-slate-300">{metrics.qualifiedLeads}</div>
+                  <div className="text-3xl font-bold text-slate-300">{filteredMetrics.qualifiedLeads}</div>
                   <p className="text-sm font-medium text-slate-300">
-                    {metrics.qualificationRate.toFixed(1)}% de qualificação
+                    {filteredMetrics.qualificationRate.toFixed(1)}% de qualificação
                   </p>
                 </>
               )}
