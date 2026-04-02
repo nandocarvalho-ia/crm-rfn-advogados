@@ -667,6 +667,21 @@ const CRMDashboardReal: React.FC = () => {
                     </SelectContent>
                   </Select>
 
+                  <Select value={tipoCasoFilter} onValueChange={setTipoCasoFilter}>
+                    <SelectTrigger className="w-full sm:w-40 bg-card/60 border-purple-500/20 hover:border-purple-500/40 transition-colors">
+                      <SelectValue placeholder="Tipo">
+                        {tipoCasoFilter === 'Todos' ? 'Tipo: Todos' : `Tipo: ${tipoCasoFilter}`}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Todos">Todos</SelectItem>
+                      <SelectItem value="LOTE">Lote</SelectItem>
+                      <SelectItem value="COTA">Cota</SelectItem>
+                      <SelectItem value="LOTE E COTA">Lote e Cota</SelectItem>
+                      <SelectItem value="INDEFINIDO">Indefinido</SelectItem>
+                    </SelectContent>
+                  </Select>
+
                   {/* Date Filter */}
                   <div className="w-full sm:w-52">
                     <Select value={dateFilter} onValueChange={setDateFilter}>
