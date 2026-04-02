@@ -342,6 +342,7 @@ const CRMDashboardReal: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('Todos');
   const [categoryFilter, setCategoryFilter] = useState('Todas');
+  const [tipoCasoFilter, setTipoCasoFilter] = useState('Todos');
   const [dateFilter, setDateFilter] = useState('all');
   const [customDateRange, setCustomDateRange] = useState<{
     from?: Date;
