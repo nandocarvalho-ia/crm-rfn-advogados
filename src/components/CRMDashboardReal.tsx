@@ -785,16 +785,17 @@ const CRMDashboardReal: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Lead</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Estado</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Categoria</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Status</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Score</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Data de Entrada</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Valor Pago</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Ações</th>
-                    </tr>
+                     <tr className="border-b border-border">
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Lead</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Tipo</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Estado</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Categoria</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Status</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Score</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Data de Entrada</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Valor Pago</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Ações</th>
+                     </tr>
                   </thead>
                   <tbody>
                     {filteredLeads.map(lead => (
