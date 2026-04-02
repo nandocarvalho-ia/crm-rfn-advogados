@@ -724,6 +724,7 @@ export type Database = {
           followup_2: string | null
           followup_3: string | null
           id: string
+          id_lead_kommo: string | null
           instancia: string | null
           last_interaction: string | null
           motivo_cancelamento: string | null
@@ -764,6 +765,7 @@ export type Database = {
           followup_2?: string | null
           followup_3?: string | null
           id?: string
+          id_lead_kommo?: string | null
           instancia?: string | null
           last_interaction?: string | null
           motivo_cancelamento?: string | null
@@ -804,6 +806,7 @@ export type Database = {
           followup_2?: string | null
           followup_3?: string | null
           id?: string
+          id_lead_kommo?: string | null
           instancia?: string | null
           last_interaction?: string | null
           motivo_cancelamento?: string | null
@@ -1232,6 +1235,24 @@ export type Database = {
         Relationships: []
       }
       n8n_chat_histories_roger_backup: {
+        Row: {
+          id: number
+          message: Json
+          session_id: string
+        }
+        Insert: {
+          id?: number
+          message: Json
+          session_id: string
+        }
+        Update: {
+          id?: number
+          message?: Json
+          session_id?: string
+        }
+        Relationships: []
+      }
+      n8n_chat_histories_roger_kommo: {
         Row: {
           id: number
           message: Json
@@ -1893,7 +1914,7 @@ export type Database = {
           acao: string
           prioridade: string
           template_id: string
-          tempo_sugerido: unknown
+          tempo_sugerido: string
         }[]
       }
       upsert_estrutura_meta: {
