@@ -439,10 +439,20 @@ const CRMDashboardReal: React.FC = () => {
         const leadDate = new Date(lead.created_at);
         matchesDate = isWithinInterval(leadDate, { start: dateRange.from, end: dateRange.to });
       }
+
+      // Tipo de caso filter
+      let matchesTipo = true;
+      if (tipoCasoFilter !== 'Todos') {
+        if (tipoCasoFilter === 'INDEFINIDO') {
+          matchesTipo = !lead.tipo_caso;
+        } else {
+          matchesTipo = lead.tipo_caso?.toUpperCase() === tipoCasoFilter;
+        }
+      }
       
-      return matchesSearch && matchesStatus && matchesCategory && matchesDate;
+      return matchesSearch && matchesStatus && matchesCategory && matchesDate && matchesTipo;
     });
-  }, [leads, searchTerm, statusFilter, categoryFilter, dateFilter, customDateRange.from, customDateRange.to, customDateRange.startTime, customDateRange.endTime]);
+  }, [leads, searchTerm, statusFilter, categoryFilter, tipoCasoFilter, dateFilter, customDateRange.from, customDateRange.to, customDateRange.startTime, customDateRange.endTime]);
 
   const clearFilters = () => {
     setSearchTerm('');
