@@ -811,11 +811,21 @@ const CRMDashboardReal: React.FC = () => {
                             </div>
                             <div className="text-sm text-muted-foreground">{lead.telefone}</div>
                           </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <span className="text-sm font-medium text-foreground">
-                            {getEstadoFromTelefone(lead.telefone) || lead.estado || '-'}
-                          </span>
+                         </td>
+                         <td className="py-4 px-4">
+                           <Badge className={
+                             lead.tipo_caso?.toLowerCase() === 'lote' ? 'bg-blue-600 text-white' :
+                             lead.tipo_caso?.toLowerCase() === 'cota' ? 'bg-purple-600 text-white' :
+                             lead.tipo_caso?.toLowerCase() === 'lote e cota' ? 'bg-indigo-600 text-white' :
+                             'bg-gray-400 text-white'
+                           }>
+                             {lead.tipo_caso ? lead.tipo_caso.toUpperCase() : 'INDEFINIDO'}
+                           </Badge>
+                         </td>
+                         <td className="py-4 px-4">
+                           <span className="text-sm font-medium text-foreground">
+                             {getEstadoFromTelefone(lead.telefone) || lead.estado || '-'}
+                           </span>
                         </td>
                         <td className="py-4 px-4">
                           <Badge className={getCategoryStyle(lead.categoria_lead)}>
