@@ -39,31 +39,43 @@ export const useLeadsRoger = () => {
   const { data: leads = [], isLoading, error } = useQuery({
     queryKey: ['leads-roger'],
     queryFn: async () => {
-      // Execute both queries in parallel
-      const [leadsResult, fluxoResult] = await Promise.all([
-        supabase
+      // Fetch all leads with pagination (Supabase default limit is 1000)
+      let allLeads: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await supabase
           .from('leads_roger')
           .select('*')
           .is('deleted_at', null)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('[FLUXO] • IA')
-          .select('TELEFONE, ATENDENTE')
-      ]);
+          .order('created_at', { ascending: false })
+          .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+        allLeads = [...allLeads, ...(data || [])];
+        hasMore = (data?.length || 0) === pageSize;
+        from += pageSize;
+      }
+
+      // Fetch fluxo data
+      const { data: fluxoData, error: fluxoError } = await supabase
+        .from('[FLUXO] • IA')
+        .select('TELEFONE, ATENDENTE');
       
-      if (leadsResult.error) throw leadsResult.error;
-      if (fluxoResult.error) throw fluxoResult.error;
+      if (fluxoError) throw fluxoError;
       
       // Create a map for quick lookup of ATENDENTE by TELEFONE
       const fluxoMap = new Map<string, string>();
-      (fluxoResult.data || []).forEach((fluxo: any) => {
+      (fluxoData || []).forEach((fluxo: any) => {
         if (fluxo.TELEFONE) {
           fluxoMap.set(fluxo.TELEFONE, fluxo.ATENDENTE);
         }
       });
       
       // Combine the data
-      return (leadsResult.data || []).map((lead: any) => ({
+      return allLeads.map((lead: any) => ({
         ...lead,
         atendente: fluxoMap.get(String(lead.telefone)) || null
       })) as LeadRoger[];
