@@ -342,6 +342,7 @@ const CRMDashboardReal: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('Todos');
   const [categoryFilter, setCategoryFilter] = useState('Todas');
+  const [tipoCasoFilter, setTipoCasoFilter] = useState('Todos');
   const [dateFilter, setDateFilter] = useState('all');
   const [customDateRange, setCustomDateRange] = useState<{
     from?: Date;
@@ -438,21 +439,50 @@ const CRMDashboardReal: React.FC = () => {
         const leadDate = new Date(lead.created_at);
         matchesDate = isWithinInterval(leadDate, { start: dateRange.from, end: dateRange.to });
       }
+
+      // Tipo de caso filter
+      let matchesTipo = true;
+      if (tipoCasoFilter !== 'Todos') {
+        if (tipoCasoFilter === 'INDEFINIDO') {
+          matchesTipo = !lead.tipo_caso;
+        } else {
+          matchesTipo = lead.tipo_caso?.toUpperCase() === tipoCasoFilter;
+        }
+      }
       
-      return matchesSearch && matchesStatus && matchesCategory && matchesDate;
+      return matchesSearch && matchesStatus && matchesCategory && matchesDate && matchesTipo;
     });
-  }, [leads, searchTerm, statusFilter, categoryFilter, dateFilter, customDateRange.from, customDateRange.to, customDateRange.startTime, customDateRange.endTime]);
+  }, [leads, searchTerm, statusFilter, categoryFilter, tipoCasoFilter, dateFilter, customDateRange.from, customDateRange.to, customDateRange.startTime, customDateRange.endTime]);
 
   const clearFilters = () => {
     setSearchTerm('');
     setStatusFilter('Todos');
     setCategoryFilter('Todas');
+    setTipoCasoFilter('Todos');
     setDateFilter('all');
     setCustomDateRange({
       startTime: '00:00',
       endTime: '23:59'
     });
   };
+
+  // KPIs computed from filtered leads
+  const filteredMetrics = useMemo(() => {
+    const totalLeads = filteredLeads.length;
+    const qualifiedLeads = filteredLeads.filter(lead => 
+      (lead.categoria_lead === 'EXCELENTE' || lead.categoria_lead === 'POTENCIAL EXCELENTE') &&
+      lead.status_lead !== 'convertido'
+    ).length;
+    const convertedLeads = filteredLeads.filter(lead => lead.status_lead === 'convertido').length;
+    const totalPotential = filteredLeads
+      .filter(lead => lead.status_lead === 'convertido')
+      .reduce((sum, lead) => {
+        const valor = parseFloat(lead.valor_pago?.toString() || '0');
+        return sum + (isNaN(valor) ? 0 : valor);
+      }, 0);
+    const qualificationRate = totalLeads > 0 ? (qualifiedLeads / totalLeads) * 100 : 0;
+    return { totalLeads, qualifiedLeads, convertedLeads, totalPotential, qualificationRate };
+  }, [filteredLeads]);
 
   const openLeadModal = (lead: LeadRoger) => {
     setSelectedLead(lead);
@@ -537,7 +567,7 @@ const CRMDashboardReal: React.FC = () => {
               {isLoading ? (
                 <Skeleton className="h-8 w-16 bg-slate-700" />
               ) : (
-                <div className="text-3xl font-bold text-slate-300">{metrics.totalLeads}</div>
+                <div className="text-3xl font-bold text-slate-300">{filteredMetrics.totalLeads}</div>
               )}
             </CardContent>
           </Card>
@@ -552,9 +582,9 @@ const CRMDashboardReal: React.FC = () => {
                 <Skeleton className="h-8 w-16 bg-slate-700" />
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-slate-300">{metrics.qualifiedLeads}</div>
+                  <div className="text-3xl font-bold text-slate-300">{filteredMetrics.qualifiedLeads}</div>
                   <p className="text-sm font-medium text-slate-300">
-                    {metrics.qualificationRate.toFixed(1)}% de qualificação
+                    {filteredMetrics.qualificationRate.toFixed(1)}% de qualificação
                   </p>
                 </>
               )}
@@ -570,7 +600,7 @@ const CRMDashboardReal: React.FC = () => {
               {isLoading ? (
                 <Skeleton className="h-8 w-16 bg-slate-700" />
               ) : (
-                <div className="text-3xl font-bold text-slate-300">{metrics.convertedLeads}</div>
+                <div className="text-3xl font-bold text-slate-300">{filteredMetrics.convertedLeads}</div>
               )}
             </CardContent>
           </Card>
@@ -584,7 +614,7 @@ const CRMDashboardReal: React.FC = () => {
               {isLoading ? (
                 <Skeleton className="h-8 w-24 bg-slate-700" />
               ) : (
-                <div className="text-3xl font-bold text-slate-300">{formatCurrency(metrics.totalPotential)}</div>
+                <div className="text-3xl font-bold text-slate-300">{formatCurrency(filteredMetrics.totalPotential)}</div>
               )}
             </CardContent>
           </Card>
@@ -634,6 +664,21 @@ const CRMDashboardReal: React.FC = () => {
                       <SelectItem value="novo">Novo</SelectItem>
                       <SelectItem value="conversando">Conversando</SelectItem>
                       <SelectItem value="convertido">Convertido</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={tipoCasoFilter} onValueChange={setTipoCasoFilter}>
+                    <SelectTrigger className="w-full sm:w-40 bg-card/60 border-purple-500/20 hover:border-purple-500/40 transition-colors">
+                      <SelectValue placeholder="Tipo">
+                        {tipoCasoFilter === 'Todos' ? 'Tipo: Todos' : `Tipo: ${tipoCasoFilter}`}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Todos">Todos</SelectItem>
+                      <SelectItem value="LOTE">Lote</SelectItem>
+                      <SelectItem value="COTA">Cota</SelectItem>
+                      <SelectItem value="LOTE E COTA">Lote e Cota</SelectItem>
+                      <SelectItem value="INDEFINIDO">Indefinido</SelectItem>
                     </SelectContent>
                   </Select>
 
