@@ -567,7 +567,7 @@ const CRMDashboardReal: React.FC = () => {
               {isLoading ? (
                 <Skeleton className="h-8 w-16 bg-slate-700" />
               ) : (
-                <div className="text-3xl font-bold text-slate-300">{metrics.totalLeads}</div>
+                <div className="text-3xl font-bold text-slate-300">{filteredMetrics.totalLeads}</div>
               )}
             </CardContent>
           </Card>
