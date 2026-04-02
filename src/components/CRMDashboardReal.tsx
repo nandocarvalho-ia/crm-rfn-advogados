@@ -387,13 +387,38 @@ const CRMDashboardReal: React.FC = () => {
   // Filtered leads
   const filteredLeads = useMemo(() => {
     if (!leads) return [];
+
+    // Compute date range inside useMemo to avoid stale closures
+    const now = new Date();
+    let dateRange: { from: Date; to: Date } | null = null;
+    switch (dateFilter) {
+      case '24h':
+        dateRange = { from: subHours(now, 24), to: now };
+        break;
+      case '7d':
+        dateRange = { from: subDays(now, 7), to: now };
+        break;
+      case '30d':
+        dateRange = { from: subDays(now, 30), to: now };
+        break;
+      case 'custom':
+        if (customDateRange.from && customDateRange.to) {
+          const fromDateTime = new Date(customDateRange.from);
+          const toDateTime = new Date(customDateRange.to);
+          const [fromHour, fromMinute] = customDateRange.startTime.split(':');
+          const [toHour, toMinute] = customDateRange.endTime.split(':');
+          fromDateTime.setHours(parseInt(fromHour), parseInt(fromMinute), 0, 0);
+          toDateTime.setHours(parseInt(toHour), parseInt(toMinute), 59, 999);
+          dateRange = { from: fromDateTime, to: toDateTime };
+        }
+        break;
+    }
+
     return leads.filter(lead => {
       const matchesSearch = (lead.nome_lead || '').toLowerCase().includes(searchTerm.toLowerCase());
       
-      // Status filter - use exact lowercase values from database
       const matchesStatus = statusFilter === 'Todos' || lead.status_lead === statusFilter.toLowerCase();
       
-      // Category filter - use exact database values
       let matchesCategory = true;
       if (categoryFilter !== 'Todas') {
         const categoryMap: Record<string, string> = {
@@ -408,8 +433,6 @@ const CRMDashboardReal: React.FC = () => {
         matchesCategory = lead.categoria_lead === dbCategoryValue;
       }
       
-      // Date filter logic - use isWithinInterval for inclusive dates
-      const dateRange = getDateFilterRange();
       let matchesDate = true;
       if (dateRange) {
         const leadDate = new Date(lead.created_at);
@@ -418,7 +441,7 @@ const CRMDashboardReal: React.FC = () => {
       
       return matchesSearch && matchesStatus && matchesCategory && matchesDate;
     });
-  }, [leads, searchTerm, statusFilter, categoryFilter, dateFilter, customDateRange]);
+  }, [leads, searchTerm, statusFilter, categoryFilter, dateFilter, customDateRange.from, customDateRange.to, customDateRange.startTime, customDateRange.endTime]);
 
   const clearFilters = () => {
     setSearchTerm('');
@@ -762,16 +785,17 @@ const CRMDashboardReal: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Lead</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Estado</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Categoria</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Status</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Score</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Data de Entrada</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Valor Pago</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Ações</th>
-                    </tr>
+                     <tr className="border-b border-border">
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Lead</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Tipo</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Estado</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Categoria</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Status</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Score</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Data de Entrada</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Valor Pago</th>
+                       <th className="text-left py-3 px-4 font-semibold text-foreground">Ações</th>
+                     </tr>
                   </thead>
                   <tbody>
                     {filteredLeads.map(lead => (
@@ -787,11 +811,21 @@ const CRMDashboardReal: React.FC = () => {
                             </div>
                             <div className="text-sm text-muted-foreground">{lead.telefone}</div>
                           </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <span className="text-sm font-medium text-foreground">
-                            {getEstadoFromTelefone(lead.telefone) || lead.estado || '-'}
-                          </span>
+                         </td>
+                         <td className="py-4 px-4">
+                           <Badge className={
+                             lead.tipo_caso?.toLowerCase() === 'lote' ? 'bg-blue-600 text-white' :
+                             lead.tipo_caso?.toLowerCase() === 'cota' ? 'bg-purple-600 text-white' :
+                             lead.tipo_caso?.toLowerCase() === 'lote e cota' ? 'bg-indigo-600 text-white' :
+                             'bg-gray-400 text-white'
+                           }>
+                             {lead.tipo_caso ? lead.tipo_caso.toUpperCase() : 'INDEFINIDO'}
+                           </Badge>
+                         </td>
+                         <td className="py-4 px-4">
+                           <span className="text-sm font-medium text-foreground">
+                             {getEstadoFromTelefone(lead.telefone) || lead.estado || '-'}
+                           </span>
                         </td>
                         <td className="py-4 px-4">
                           <Badge className={getCategoryStyle(lead.categoria_lead)}>
