@@ -1,12 +1,17 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 
 export function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+
+  // Rotas full-bleed ocupam a área de conteúdo sem padding (ex: chat ao vivo).
+  const fullBleed = location.pathname.startsWith('/chat-ao-vivo');
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-app-bg">
@@ -35,7 +40,12 @@ export function AppLayout() {
       {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar onOpenMobileSidebar={() => setMobileOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <main
+          className={cn(
+            'flex-1 min-h-0',
+            fullBleed ? 'overflow-hidden' : 'overflow-y-auto p-4 md:p-8',
+          )}
+        >
           <Outlet />
         </main>
       </div>
