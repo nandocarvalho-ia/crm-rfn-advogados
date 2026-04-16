@@ -1,7 +1,8 @@
-import { ArrowLeft, Phone } from 'lucide-react';
+import { ArrowLeft, Bot, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Conversation } from '@/hooks/useChatConversations';
+import { cn } from '@/lib/utils';
+import { avatarColorFromKey, formatPhoneBR, initialsFromName } from './utils';
 
 interface ChatHeaderProps {
   conversation: Conversation;
@@ -9,45 +10,52 @@ interface ChatHeaderProps {
 }
 
 export const ChatHeader = ({ conversation, onBack }: ChatHeaderProps) => {
-  const formatPhone = (phone: string) => {
-    const cleaned = phone.replace(/\D/g, '');
-    if (cleaned.length === 13) {
-      return `+${cleaned.slice(0, 2)} (${cleaned.slice(2, 4)}) ${cleaned.slice(4, 9)}-${cleaned.slice(9)}`;
-    }
-    return phone;
-  };
+  const { bg, fg } = avatarColorFromKey(conversation.user_name || conversation.session_id);
+  const initials = initialsFromName(conversation.user_name);
 
   return (
-    <div className="flex items-center gap-3 p-4 border-b bg-card">
+    <div className="flex items-center gap-3 border-b border-line bg-app-card px-4 py-3">
       {onBack && (
-        <Button variant="ghost" size="icon" onClick={onBack}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onBack}
+          className="h-9 w-9 md:hidden"
+        >
           <ArrowLeft className="h-5 w-5" />
         </Button>
       )}
-      
-      <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-foreground truncate">{conversation.user_name}</h3>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Phone className="h-3 w-3" />
-          <span className="truncate">{formatPhone(conversation.telefone_limpo)}</span>
-        </div>
+
+      <span
+        className={cn(
+          'flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
+          bg,
+          fg,
+        )}
+      >
+        {initials}
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <h3 className="truncate text-sm font-semibold text-ink">
+          {conversation.user_name || 'Sem nome'}
+        </h3>
+        <p className="truncate text-xs text-ink-muted">
+          {formatPhoneBR(conversation.telefone_limpo)}
+        </p>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         {conversation.is_ia_blocked ? (
-          <Badge variant="secondary" className="text-xs">
-            👤 Humano
-          </Badge>
+          <span className="inline-flex items-center gap-1 rounded-full bg-tag-warning-bg px-3 py-1 text-xs font-medium text-tag-warning">
+            <User className="h-3 w-3" />
+            Humano
+          </span>
         ) : (
-          <Badge variant="default" className="text-xs">
-            🤖 IA Rafael
-          </Badge>
-        )}
-        
-        {conversation.campanha && (
-          <Badge variant="outline" className="text-xs truncate max-w-[120px]">
-            {conversation.campanha}
-          </Badge>
+          <span className="inline-flex items-center gap-1 rounded-full bg-tag-info-bg px-3 py-1 text-xs font-medium text-tag-info">
+            <Bot className="h-3 w-3" />
+            IA Rafael
+          </span>
         )}
       </div>
     </div>
