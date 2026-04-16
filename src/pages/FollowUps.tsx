@@ -1,19 +1,19 @@
-import { Send } from 'lucide-react';
-import { EmptyState, PageHeader } from '@/components/common';
+import { PageHeader } from '@/components/common';
+import { ConfigCard } from '@/components/followups/ConfigCard';
+import { FollowUpsTable } from '@/components/followups/FollowUpsTable';
+import { MetricasFooter } from '@/components/followups/MetricasFooter';
 
 const FollowUps = () => {
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader
         title="Follow-ups"
         description="Leads com follow-up agendado, edição de textos e métricas."
       />
-      <EmptyState
-        icon={Send}
-        title="Follow-ups em construção"
-        description="Card de configurações, tabela de follow-ups agendados e modal de edição chegam na próxima sub-etapa."
-      />
-    </>
+      <ConfigCard />
+      <FollowUpsTable />
+      <MetricasFooter />
+    </div>
   );
 };
 
