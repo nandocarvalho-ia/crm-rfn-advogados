@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Calendar as CalendarIcon, Download, Loader2, Search, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Download, Loader2, Plus, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -28,6 +28,7 @@ import { useLeadsRoger, type LeadRoger } from '@/hooks/useLeadsRoger';
 import { formatPhoneBR } from '@/components/chat/utils';
 import { StatusInlineSelect } from './StatusInlineSelect';
 import { LeadDetailsModal } from './LeadDetailsModal';
+import { NovoLeadModal } from './NovoLeadModal';
 import type { StatusLead } from './mockLeads';
 
 type CategoryFilter = 'all' | 'sem-classificacao' | 'qualificado' | 'desqualificado';
@@ -68,6 +69,7 @@ export function LeadsTable() {
   const selectedLead = selectedLeadId
     ? leads.find((l) => l.id === selectedLeadId) ?? null
     : null;
+  const [novoLeadOpen, setNovoLeadOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState<CategoryFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -274,17 +276,28 @@ export function LeadsTable() {
           <span className="font-semibold text-ink">{total}</span> leads
           {isLoading && <Loader2 className="ml-2 inline h-3.5 w-3.5 animate-spin text-ink-muted" />}
         </p>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleExportCSV}
-          className="gap-2"
-          disabled={filtered.length === 0}
-        >
-          <Download className="h-4 w-4" />
-          Exportar CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleExportCSV}
+            className="gap-2"
+            disabled={filtered.length === 0}
+          >
+            <Download className="h-4 w-4" />
+            Exportar CSV
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setNovoLeadOpen(true)}
+            className="gap-2 bg-brand hover:bg-brand-hover"
+          >
+            <Plus className="h-4 w-4" />
+            Novo lead
+          </Button>
+        </div>
       </div>
 
       {/* Tabela */}
@@ -330,6 +343,7 @@ export function LeadsTable() {
       </div>
 
       <LeadDetailsModal lead={selectedLead} onClose={() => setSelectedLeadId(null)} />
+      <NovoLeadModal open={novoLeadOpen} onClose={() => setNovoLeadOpen(false)} />
     </section>
   );
 }
