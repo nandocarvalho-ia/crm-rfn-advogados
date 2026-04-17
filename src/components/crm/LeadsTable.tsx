@@ -1,9 +1,14 @@
 import { useMemo, useState } from 'react';
-import { Download, Loader2, Search } from 'lucide-react';
+import { Calendar as CalendarIcon, Download, Loader2, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import type { DateRange } from 'react-day-picker';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -62,6 +67,23 @@ export function LeadsTable() {
   const [catFilter, setCatFilter] = useState<CategoryFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [tipoFilter, setTipoFilter] = useState<TipoFilter>('all');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+
+  const hasActiveFilters =
+    search !== '' ||
+    catFilter !== 'all' ||
+    statusFilter !== 'all' ||
+    tipoFilter !== 'all' ||
+    !!dateRange?.from ||
+    !!dateRange?.to;
+
+  const clearFilters = () => {
+    setSearch('');
+    setCatFilter('all');
+    setStatusFilter('all');
+    setTipoFilter('all');
+    setDateRange(undefined);
+  };
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: StatusLead }) => {
@@ -85,6 +107,13 @@ export function LeadsTable() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
+    const fromMs = dateRange?.from ? new Date(dateRange.from).setHours(0, 0, 0, 0) : null;
+    const toMs = dateRange?.to
+      ? new Date(dateRange.to).setHours(23, 59, 59, 999)
+      : dateRange?.from
+        ? new Date(dateRange.from).setHours(23, 59, 59, 999)
+        : null;
+
     return leads.filter((l) => {
       if (q) {
         const nome = (l.nome_lead || '').toLowerCase();
@@ -94,9 +123,15 @@ export function LeadsTable() {
       if (catFilter !== 'all' && classifyCategoria(l.categoria_lead) !== catFilter) return false;
       if (statusFilter !== 'all' && l.status_lead !== statusFilter) return false;
       if (tipoFilter !== 'all' && l.tipo_caso !== tipoFilter) return false;
+
+      if (fromMs !== null && toMs !== null && l.created_at) {
+        const createdMs = new Date(l.created_at).getTime();
+        if (createdMs < fromMs || createdMs > toMs) return false;
+      }
+
       return true;
     });
-  }, [leads, search, catFilter, statusFilter, tipoFilter]);
+  }, [leads, search, catFilter, statusFilter, tipoFilter, dateRange]);
 
   const showConversionColumn = statusFilter === 'all' || statusFilter === 'convertido';
 
@@ -183,6 +218,48 @@ export function LeadsTable() {
             <SelectItem value="cota">Cota</SelectItem>
           </SelectContent>
         </Select>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="default"
+              className={cn(
+                'h-10 justify-start gap-2 font-normal',
+                dateRange?.from && 'text-ink',
+                !dateRange?.from && 'text-ink-muted',
+              )}
+            >
+              <CalendarIcon className="h-4 w-4" />
+              {dateRange?.from
+                ? dateRange.to
+                  ? `${format(dateRange.from, 'dd/MM', { locale: ptBR })} — ${format(dateRange.to, 'dd/MM', { locale: ptBR })}`
+                  : format(dateRange.from, 'dd/MM/yyyy', { locale: ptBR })
+                : 'Período'}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="range"
+              selected={dateRange}
+              onSelect={setDateRange}
+              numberOfMonths={2}
+              locale={ptBR}
+            />
+          </PopoverContent>
+        </Popover>
+
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="gap-1.5 text-ink-muted hover:text-ink"
+          >
+            <X className="h-4 w-4" />
+            Limpar filtros
+          </Button>
+        )}
       </div>
 
       {/* Cabeçalho da tabela com contador + export */}

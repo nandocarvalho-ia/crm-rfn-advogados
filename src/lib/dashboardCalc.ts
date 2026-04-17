@@ -45,8 +45,15 @@ export function computeKPIs(
   const convRatePrev =
     qualifiedPrev.length > 0 ? (convertedPrev.length / qualifiedPrev.length) * 100 : 0;
 
-  const potencialCur = convertedCur.reduce((s, l) => s + toNumber(l.valor_pago), 0);
-  const potencialPrev = convertedPrev.reduce((s, l) => s + toNumber(l.valor_pago), 0);
+  // Potencial de recuperação = valor_pago de qualificados ∪ convertidos criados no período.
+  const isRecoverable = (l: DashboardLead) =>
+    isQualificado(l) || l.status_lead === 'convertido';
+  const potencialCur = createdCur
+    .filter(isRecoverable)
+    .reduce((s, l) => s + toNumber(l.valor_pago), 0);
+  const potencialPrev = createdPrev
+    .filter(isRecoverable)
+    .reduce((s, l) => s + toNumber(l.valor_pago), 0);
 
   return {
     totalLeads: createdCur.length,

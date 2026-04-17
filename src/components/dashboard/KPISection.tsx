@@ -30,11 +30,11 @@ export function KPISection({ kpis }: { kpis: KPISet }) {
         footnote="vs. período anterior"
       />
       <KPICard
-        label="Potencial recuperado"
+        label="Potencial de recuperação"
         value={fmtMoney(kpis.recoveredPotential)}
         icon={DollarSign}
         deltaPct={kpis.deltas.potential}
-        footnote="vs. período anterior"
+        footnote="qualificados ∪ convertidos no período"
       />
     </div>
   );

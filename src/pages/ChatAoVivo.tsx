@@ -31,9 +31,20 @@ const ChatAoVivo = () => {
 
   const filteredConversations = conversations.filter((conv) => {
     if (search) {
-      const q = normalizeText(search);
-      const matchName = normalizeText(conv.user_name || '').includes(q);
-      const matchPhone = normalizePhone(conv.telefone_limpo).includes(normalizePhone(search));
+      const rawDigits = normalizePhone(search);
+      const looksLikePhone = rawDigits.length >= 3 && rawDigits.length === search.replace(/\s|-|\(|\)/g, '').length;
+      const matchPhone = looksLikePhone
+        ? normalizePhone(conv.telefone_limpo).includes(rawDigits)
+        : false;
+
+      // Nome: a partir de 3 caracteres, prefixo em qualquer token (nome ou sobrenome).
+      const q = normalizeText(search).trim();
+      let matchName = false;
+      if (q.length >= 3) {
+        const tokens = normalizeText(conv.user_name || '').split(/\s+/).filter(Boolean);
+        matchName = tokens.some((t) => t.startsWith(q));
+      }
+
       if (!matchName && !matchPhone) return false;
     }
     if (filterByIAStatus === 'ia' && conv.is_ia_blocked) return false;
