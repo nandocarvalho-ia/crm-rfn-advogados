@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Output de scripts de backfill (contém snapshots de dados de produção)
+scripts/output/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
