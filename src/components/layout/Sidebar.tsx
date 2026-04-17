@@ -4,7 +4,7 @@ import {
   Users,
   Send,
   MessageSquare,
-  Settings,
+  UserCircle,
   LogOut,
   ChevronsLeft,
   ChevronsRight,
@@ -28,7 +28,7 @@ const MAIN_ITEMS: NavItem[] = [
 ];
 
 const ACCOUNT_ITEMS: NavItem[] = [
-  { to: '/configuracoes', label: 'Configurações', Icon: Settings, disabled: true },
+  { to: '/perfil', label: 'Perfil', Icon: UserCircle },
 ];
 
 interface SidebarProps {

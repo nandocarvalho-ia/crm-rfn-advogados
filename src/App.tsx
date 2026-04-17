@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import CRM from "./pages/CRM";
 import FollowUps from "./pages/FollowUps";
 import ChatAoVivo from "./pages/ChatAoVivo";
+import Perfil from "./pages/Perfil";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/crm" element={<CRM />} />
             <Route path="/follow-ups" element={<FollowUps />} />
             <Route path="/chat-ao-vivo" element={<ChatAoVivo />} />
+            <Route path="/perfil" element={<Perfil />} />
           </Route>
 
           {/* CRM legacy — acesso temporário ao CRMDashboardReal em produção
