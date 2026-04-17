@@ -1,23 +1,21 @@
-import { Send, MessageCircleReply } from 'lucide-react';
-import { MOCK_METRICAS } from './mockFollowUps';
+import { MessageCircleReply, Send } from 'lucide-react';
+import { useFollowUpsAgendados } from '@/hooks/useFollowUpsAgendados';
 
 export function MetricasFooter() {
+  const { data = [], isLoading } = useFollowUpsAgendados();
+
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       <MetricaCard
         Icon={Send}
-        label="Total de follow-ups enviados"
-        value={MOCK_METRICAS.totalEnviados.toLocaleString('pt-BR')}
+        label="Leads com follow-up preparado"
+        value={isLoading ? '—' : data.length.toLocaleString('pt-BR')}
       />
       <MetricaCard
         Icon={MessageCircleReply}
         label="Taxa de resposta"
-        value={
-          MOCK_METRICAS.taxaResposta !== null
-            ? `${MOCK_METRICAS.taxaResposta.toFixed(1)}%`
-            : '—'
-        }
-        footnote={MOCK_METRICAS.taxaResposta === null ? 'Em breve' : undefined}
+        value="—"
+        footnote="Em breve"
       />
     </div>
   );

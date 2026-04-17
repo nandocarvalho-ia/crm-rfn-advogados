@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Pencil, Search } from 'lucide-react';
+import { Loader2, Pencil, Search } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,42 +12,22 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { useFollowUpsAgendados, type FollowUpLead } from '@/hooks/useFollowUpsAgendados';
+import { formatPhoneBR } from '@/components/chat/utils';
+import { StatusBadge } from '@/components/common';
 import { EditarTextosModal } from './EditarTextosModal';
-import { MOCK_FOLLOWUPS, type FollowUpLead } from './mockFollowUps';
 
-type FUFilter = 'all' | '1' | '2';
+type FUFilter = 'all' | '1' | '2' | '3';
 
-function relativeLong(iso: string, { past = true }: { past?: boolean } = {}) {
-  const ms = Date.now() - new Date(iso).getTime();
-  const abs = Math.abs(ms);
-  const min = Math.round(abs / 60_000);
-  const hr = Math.round(min / 60);
-  const day = Math.round(hr / 24);
-
-  if (ms >= 0) {
-    if (past) {
-      if (min < 60) return `há ${min} min`;
-      if (hr < 24) return `há ${hr}h`;
-      return `há ${day}d`;
-    }
-    // passou mas queremos rótulo de atraso
-    if (min < 60) return `atrasado há ${min} min`;
-    if (hr < 24) return `atrasado há ${hr}h`;
-    return `atrasado há ${day}d`;
-  }
-  // futuro
-  if (min < 60) return `em ${min} min`;
-  if (hr < 24) return `em ${hr}h`;
-  return `em ${day}d`;
-}
-
-function formatSchedule(iso: string) {
+function relTime(iso: string | null) {
+  if (!iso) return '—';
   const d = new Date(iso);
-  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  if (Number.isNaN(d.getTime())) return '—';
+  return formatDistanceToNow(d, { locale: ptBR, addSuffix: true });
 }
 
 export function FollowUpsTable() {
-  const [leads, setLeads] = useState<FollowUpLead[]>(MOCK_FOLLOWUPS);
+  const { data: leads = [], isLoading } = useFollowUpsAgendados();
   const [search, setSearch] = useState('');
   const [fuFilter, setFuFilter] = useState<FUFilter>('all');
   const [editing, setEditing] = useState<FollowUpLead | null>(null);
@@ -53,20 +35,17 @@ export function FollowUpsTable() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return leads.filter((l) => {
-      const fu = l.tentativas_followup + 1;
-      if (fuFilter !== 'all' && String(fu) !== fuFilter) return false;
-      if (q && !l.nome.toLowerCase().includes(q) && !l.telefone.includes(q)) return false;
+      if (q) {
+        const nome = (l.nome_lead || '').toLowerCase();
+        const tel = String(l.telefone || '');
+        if (!nome.includes(q) && !tel.includes(q)) return false;
+      }
+      if (fuFilter === '1' && !l.followup_1) return false;
+      if (fuFilter === '2' && !l.followup_2) return false;
+      if (fuFilter === '3' && !l.followup_3) return false;
       return true;
     });
   }, [leads, search, fuFilter]);
-
-  const handleSave = (id: string, fu1: string, fu2: string) => {
-    setLeads((arr) =>
-      arr.map((l) =>
-        l.id === id ? { ...l, followup_1: fu1, followup_2: fu2 } : l,
-      ),
-    );
-  };
 
   return (
     <section className="rounded-xl bg-app-card shadow-sm border border-line">
@@ -85,15 +64,17 @@ export function FollowUpsTable() {
         <Select value={fuFilter} onValueChange={(v) => setFuFilter(v as FUFilter)}>
           <SelectTrigger className="w-[180px] h-10"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos os follow-ups</SelectItem>
-            <SelectItem value="1">Follow-up 1</SelectItem>
-            <SelectItem value="2">Follow-up 2</SelectItem>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="1">Com FU 1 pronto</SelectItem>
+            <SelectItem value="2">Com FU 2 pronto</SelectItem>
+            <SelectItem value="3">Com FU 3 pronto</SelectItem>
           </SelectContent>
         </Select>
 
         <p className="ml-auto text-sm text-ink-secondary">
-          <span className="font-semibold text-ink">{filtered.length}</span> agendado
+          <span className="font-semibold text-ink">{filtered.length}</span> lead
           {filtered.length === 1 ? '' : 's'}
+          {isLoading && <Loader2 className="ml-2 inline h-3.5 w-3.5 animate-spin text-ink-muted" />}
         </p>
       </div>
 
@@ -103,48 +84,46 @@ export function FollowUpsTable() {
           <thead>
             <tr className="border-b border-line bg-app-bg/40">
               <Th>Lead</Th>
-              <Th>Último contato</Th>
-              <Th>Follow-up</Th>
-              <Th>Disparo agendado</Th>
+              <Th>Status</Th>
+              <Th>Textos prontos</Th>
+              <Th>Última atualização</Th>
               <Th align="right">Ação</Th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((l) => {
-              const fuNum = l.tentativas_followup + 1;
-              const atrasado = new Date(l.proximo_followup).getTime() < Date.now();
-              return (
-                <tr key={l.id} className="border-b border-line-subtle hover:bg-app-bg transition-colors">
+            {isLoading && leads.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-12 text-center text-ink-muted">
+                  <Loader2 className="inline h-5 w-5 animate-spin" /> Carregando leads...
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-12 text-center text-ink-muted">
+                  Nenhum lead encontrado com os filtros atuais.
+                </td>
+              </tr>
+            ) : (
+              filtered.map((l) => (
+                <tr
+                  key={l.id}
+                  className="border-b border-line-subtle hover:bg-app-bg transition-colors"
+                >
                   <td className="py-3 px-4">
-                    <div className="font-medium text-ink">{l.nome}</div>
-                    <div className="text-xs text-ink-muted">{l.telefone}</div>
-                  </td>
-                  <td className="py-3 px-4 text-ink-secondary">
-                    {relativeLong(l.last_interaction, { past: true })}
-                  </td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={cn(
-                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                        fuNum === 1
-                          ? 'bg-tag-info-bg text-tag-info'
-                          : 'bg-tag-warning-bg text-tag-warning',
-                      )}
-                    >
-                      FU {fuNum}
-                    </span>
+                    <div className="font-medium text-ink">{l.nome_lead || 'Sem nome'}</div>
+                    <div className="text-xs text-ink-muted">{formatPhoneBR(String(l.telefone))}</div>
                   </td>
                   <td className="py-3 px-4">
-                    <div className="text-ink">{formatSchedule(l.proximo_followup)}</div>
-                    <div
-                      className={cn(
-                        'text-xs',
-                        atrasado ? 'text-tag-danger' : 'text-ink-muted',
-                      )}
-                    >
-                      {relativeLong(l.proximo_followup, { past: false })}
+                    <StatusBadge status={l.status_lead as any} />
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-1.5">
+                      <FUChip active={!!l.followup_1} label="FU 1" />
+                      <FUChip active={!!l.followup_2} label="FU 2" />
+                      <FUChip active={!!l.followup_3} label="FU 3" />
                     </div>
                   </td>
+                  <td className="py-3 px-4 text-ink-secondary">{relTime(l.updated_at)}</td>
                   <td className="py-3 px-4 text-right">
                     <Button
                       type="button"
@@ -158,25 +137,28 @@ export function FollowUpsTable() {
                     </Button>
                   </td>
                 </tr>
-              );
-            })}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={5} className="py-12 text-center text-ink-muted">
-                  Nenhum follow-up agendado com os filtros atuais.
-                </td>
-              </tr>
+              ))
             )}
           </tbody>
         </table>
       </div>
 
-      <EditarTextosModal
-        lead={editing}
-        onClose={() => setEditing(null)}
-        onSave={handleSave}
-      />
+      <EditarTextosModal lead={editing} onClose={() => setEditing(null)} />
     </section>
+  );
+}
+
+function FUChip({ active, label }: { active: boolean; label: string }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium',
+        active ? 'bg-tag-info-bg text-tag-info' : 'bg-tag-neutral-bg text-tag-neutral opacity-60',
+      )}
+      title={active ? `${label} pronto` : `${label} não gerado`}
+    >
+      {label}
+    </span>
   );
 }
 
