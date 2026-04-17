@@ -129,10 +129,6 @@ export const useIABlockControl = () => {
         throw updateError;
       }
 
-      toast({
-        title: "✅ Conversa assumida!",
-        description: `Você agora controla a conversa com ${nomeAtualizado}`,
-      });
       return true;
     } catch (error) {
       console.error('❌ Erro ao assumir conversa:', error);
@@ -159,11 +155,6 @@ export const useIABlockControl = () => {
         .eq('INSTÂNCIA', 'roger');
 
       if (error) throw error;
-
-      toast({
-        title: "🤖 Rafael retomou o controle",
-        description: "A conversa foi devolvida para a IA",
-      });
     } catch (error) {
       console.error('Erro ao devolver para IA:', error);
       toast({

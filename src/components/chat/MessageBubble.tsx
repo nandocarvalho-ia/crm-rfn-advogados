@@ -8,26 +8,25 @@ interface MessageBubbleProps {
 }
 
 export const MessageBubble = ({ message }: MessageBubbleProps) => {
+  const fromLead = message.isFromLead;
+
   return (
-    <div
-      className={cn(
-        'flex w-full mb-4',
-        message.isFromLead ? 'justify-start' : 'justify-end'
-      )}
-    >
+    <div className={cn('flex w-full mb-2', fromLead ? 'justify-start' : 'justify-end')}>
       <div
         className={cn(
-          'max-w-[70%] rounded-2xl px-4 py-2 shadow-sm',
-          message.isFromLead
-            ? 'bg-muted text-foreground rounded-tl-none'
-            : 'bg-primary text-primary-foreground rounded-tr-none'
+          'max-w-[70%] rounded-2xl px-4 py-2.5 shadow-sm',
+          fromLead
+            ? 'bg-app-card text-ink border border-line rounded-tl-sm'
+            : 'bg-brand-light text-ink rounded-tr-sm',
         )}
       >
-        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+        <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+          {message.content}
+        </p>
         <span
           className={cn(
-            'text-xs mt-1 block',
-            message.isFromLead ? 'text-muted-foreground' : 'text-primary-foreground/70'
+            'mt-1 block text-[10px]',
+            fromLead ? 'text-ink-muted' : 'text-ink-secondary/70',
           )}
         >
           {formatInTimeZone(message.timestamp, 'America/Sao_Paulo', 'HH:mm', { locale: ptBR })}

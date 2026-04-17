@@ -29,6 +29,15 @@ export interface LeadRoger {
   valor_estimado_recuperacao: number | null;
   proposta_recomendada: string | null;
   atendente?: string | null;
+  // Fase 2 — campos que existem em leads_roger
+  campanha: string | null;
+  codigo_criativo: string | null;
+  data_conversao: string | null;
+  phone_last_8: string | null;
+  etapa_atual: string | null;
+  last_interaction: string | null;
+  followup_1: string | null;
+  followup_2: string | null;
 }
 
 export const useLeadsRoger = () => {

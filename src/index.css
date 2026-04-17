@@ -83,6 +83,52 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* =========================================================
+       Fase 2 — Redesign tokens (HSL). Novos tokens em paralelo.
+       Consumidos apenas pelas páginas/componentes do redesign.
+       ========================================================= */
+
+    /* Sidebar e superfícies do app */
+    --app-sidebar: 191 76% 9%;           /* #04242C */
+    --app-sidebar-hover: 191 75% 15%;    /* #0A3A45 */
+    --app-sidebar-active: 191 72% 20%;   /* #0E4A58 */
+    --app-bg: 0 0% 96%;                  /* #F5F5F5 */
+    --app-card: 0 0% 100%;               /* #FFFFFF */
+
+    /* Marca */
+    --brand: 213 96% 59%;                /* #348CFB */
+    --brand-hover: 213 89% 64%;          /* #519EF6 */
+    --brand-light: 215 92% 95%;          /* #E6F0FE */
+
+    /* Texto (ink) */
+    --ink: 222 47% 11%;                  /* #0F172A */
+    --ink-secondary: 215 19% 35%;        /* #475569 */
+    --ink-muted: 215 16% 65%;            /* #94A3B8 */
+    --ink-on-dark: 0 0% 96%;             /* #F5F5F5 */
+    --ink-on-dark-muted: 192 16% 66%;    /* #94B4BC */
+
+    /* Tags semânticas (status, categoria, plataforma) */
+    --tag-success: 142 76% 36%;
+    --tag-success-bg: 141 84% 93%;
+    --tag-warning: 32 95% 44%;
+    --tag-warning-bg: 48 97% 88%;
+    --tag-info: 201 98% 39%;
+    --tag-info-bg: 204 94% 94%;
+    --tag-danger: 0 72% 51%;
+    --tag-danger-bg: 0 93% 94%;
+    --tag-neutral: 215 16% 47%;
+    --tag-neutral-bg: 210 40% 96%;
+    --tag-meta: 221 89% 52%;             /* #1877F2 */
+    --tag-meta-bg: 217 92% 95%;
+    --tag-google: 217 89% 61%;           /* #4285F4 */
+    --tag-google-bg: 216 92% 95%;
+    --tag-organic: 174 78% 26%;          /* #0E766E */
+    --tag-organic-bg: 166 85% 89%;
+
+    /* Linhas e divisores Fase 2 */
+    --line: 214 32% 91%;                 /* #E2E8F0 */
+    --line-subtle: 210 40% 96%;          /* #F1F5F9 */
   }
 
   .dark {
@@ -131,5 +177,7 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 }
