@@ -27,6 +27,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLeadsRoger, type LeadRoger } from '@/hooks/useLeadsRoger';
 import { formatPhoneBR } from '@/components/chat/utils';
 import { StatusInlineSelect } from './StatusInlineSelect';
+import { LeadDetailsModal } from './LeadDetailsModal';
 import type { StatusLead } from './mockLeads';
 
 type CategoryFilter = 'all' | 'sem-classificacao' | 'qualificado' | 'desqualificado';
@@ -63,6 +64,10 @@ export function LeadsTable() {
   const { leads, isLoading } = useLeadsRoger();
   const queryClient = useQueryClient();
 
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const selectedLead = selectedLeadId
+    ? leads.find((l) => l.id === selectedLeadId) ?? null
+    : null;
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState<CategoryFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -311,11 +316,20 @@ export function LeadsTable() {
                 </td>
               </tr>
             ) : (
-              filtered.map((l) => renderRow(l, showConversionColumn, (id, status) => updateStatus.mutate({ id, status })))
+              filtered.map((l) =>
+                renderRow(
+                  l,
+                  showConversionColumn,
+                  (id, status) => updateStatus.mutate({ id, status }),
+                  () => setSelectedLeadId(l.id),
+                ),
+              )
             )}
           </tbody>
         </table>
       </div>
+
+      <LeadDetailsModal lead={selectedLead} onClose={() => setSelectedLeadId(null)} />
     </section>
   );
 }
@@ -324,6 +338,7 @@ function renderRow(
   l: LeadRoger,
   showConversionColumn: boolean,
   onStatusChange: (id: string, next: StatusLead) => void,
+  onOpen: () => void,
 ) {
   const { platform } = parseCampanha(l.campanha);
   const group = classifyCategoria(l.categoria_lead);
@@ -333,7 +348,7 @@ function renderRow(
     <tr
       key={l.id}
       className="border-b border-line-subtle hover:bg-app-bg cursor-pointer transition-colors"
-      onClick={() => console.log('[RFN] open lead', l.id)}
+      onClick={onOpen}
     >
       <td className="py-3 px-4">
         <div className="font-medium text-ink">{l.nome_lead || 'Sem nome'}</div>
