@@ -8,7 +8,7 @@ import type {
   KPISet,
   LoteCota,
   OrigemRow,
-} from '@/components/dashboard/mockData';
+} from '@/components/dashboard/types';
 
 const toNumber = (v: unknown): number => {
   if (typeof v === 'number') return Number.isFinite(v) ? v : 0;

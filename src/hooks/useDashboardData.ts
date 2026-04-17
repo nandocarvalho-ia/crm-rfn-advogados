@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { resolvePeriod, type PeriodRange } from '@/lib/periodo';
-import type { PeriodKey } from '@/components/dashboard/mockData';
+import type { PeriodKey } from '@/components/dashboard/types';
 
 export interface DashboardLead {
   id: string;

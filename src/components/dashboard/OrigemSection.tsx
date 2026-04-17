@@ -1,5 +1,5 @@
 import { parseCampanha, PlatformBadge } from '@/components/common';
-import type { OrigemRow } from './mockData';
+import type { OrigemRow } from './types';
 
 const HUE_BY_PLATFORM = {
   meta: 'bg-tag-meta',

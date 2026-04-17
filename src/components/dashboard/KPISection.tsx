@@ -1,6 +1,6 @@
 import { DollarSign, Percent, TrendingUp, Users } from 'lucide-react';
 import { KPICard } from '@/components/common';
-import type { KPISet } from './mockData';
+import type { KPISet } from './types';
 
 const fmtMoney = (n: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);

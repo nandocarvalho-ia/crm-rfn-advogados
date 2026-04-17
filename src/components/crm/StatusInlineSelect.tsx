@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StatusBadge } from '@/components/common';
-import type { StatusLead } from './mockLeads';
+import type { StatusLead } from './types';
 
 interface StatusInlineSelectProps {
   value: StatusLead;

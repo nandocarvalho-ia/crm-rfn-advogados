@@ -1,5 +1,5 @@
 import { Building2, Home } from 'lucide-react';
-import type { LoteCota } from './mockData';
+import type { LoteCota } from './types';
 
 const fmtMoney = (n: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);

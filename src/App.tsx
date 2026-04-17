@@ -9,7 +9,6 @@ import CRM from "./pages/CRM";
 import FollowUps from "./pages/FollowUps";
 import ChatAoVivo from "./pages/ChatAoVivo";
 import Perfil from "./pages/Perfil";
-import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,10 +28,6 @@ const App = () => (
             <Route path="/chat-ao-vivo" element={<ChatAoVivo />} />
             <Route path="/perfil" element={<Perfil />} />
           </Route>
-
-          {/* CRM legacy — acesso temporário ao CRMDashboardReal em produção
-              enquanto o novo CRM é finalizado. Fora do AppLayout. */}
-          <Route path="/crm-legacy" element={<Index />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

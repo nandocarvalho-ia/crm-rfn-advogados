@@ -1,4 +1,4 @@
-import type { FunilEtapa } from './mockData';
+import type { FunilEtapa } from './types';
 
 const SHADES = ['bg-brand', 'bg-brand/80', 'bg-brand/60', 'bg-brand/45'];
 

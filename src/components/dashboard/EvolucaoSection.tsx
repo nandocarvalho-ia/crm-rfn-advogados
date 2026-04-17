@@ -8,7 +8,7 @@ import {
   YAxis,
   Legend,
 } from 'recharts';
-import type { EvolucaoPonto } from './mockData';
+import type { EvolucaoPonto } from './types';
 
 const fmtDateShort = (iso: string) => {
   const d = new Date(iso);

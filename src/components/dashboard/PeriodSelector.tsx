@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { PeriodKey } from './mockData';
+import type { PeriodKey } from './types';
 
 interface PeriodSelectorProps {
   value: PeriodKey;

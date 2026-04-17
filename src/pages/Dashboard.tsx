@@ -9,7 +9,7 @@ import { LoteCotaSection } from '@/components/dashboard/LoteCotaSection';
 import { FunilSection } from '@/components/dashboard/FunilSection';
 import { ProximosFollowUps } from '@/components/dashboard/ProximosFollowUps';
 import { EvolucaoSection } from '@/components/dashboard/EvolucaoSection';
-import type { PeriodKey } from '@/components/dashboard/mockData';
+import type { PeriodKey } from '@/components/dashboard/types';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useFollowUpsAgendados } from '@/hooks/useFollowUpsAgendados';
 import {

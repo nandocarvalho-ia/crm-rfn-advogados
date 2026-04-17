@@ -38,7 +38,7 @@ import { formatPhoneBR } from '@/components/chat/utils';
 import { StatusInlineSelect } from './StatusInlineSelect';
 import { LeadDetailsModal } from './LeadDetailsModal';
 import { NovoLeadModal } from './NovoLeadModal';
-import type { StatusLead } from './mockLeads';
+import type { StatusLead } from './types';
 
 type CategoryFilter = 'all' | 'sem-classificacao' | 'qualificado' | 'desqualificado';
 type StatusFilter = 'all' | StatusLead;

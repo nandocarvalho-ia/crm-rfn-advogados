@@ -1,4 +1,4 @@
-import type { PeriodKey } from '@/components/dashboard/mockData';
+import type { PeriodKey } from '@/components/dashboard/types';
 
 export interface PeriodRange {
   start: Date;

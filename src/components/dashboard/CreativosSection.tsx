@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { parseCampanha, PlatformBadge } from '@/components/common';
 import { cn } from '@/lib/utils';
-import type { CriativoRow } from './mockData';
+import type { CriativoRow } from './types';
 
 type SortKey = 'leads' | 'qualificados' | 'convertidos' | 'txQualif' | 'txConv' | 'potencial';
 type SortDir = 'asc' | 'desc';
