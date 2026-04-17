@@ -68,6 +68,13 @@ export function CreativosSection({ data }: { data: CriativoRow[] }) {
             </tr>
           </thead>
           <tbody>
+            {sorted.length === 0 && (
+              <tr>
+                <td colSpan={9} className="py-10 text-center text-ink-muted text-sm">
+                  Nenhum lead com código de criativo atribuído ainda.
+                </td>
+              </tr>
+            )}
             {sorted.map((row) => {
               const { platform, type } = parseCampanha(row.campanha);
               return (
