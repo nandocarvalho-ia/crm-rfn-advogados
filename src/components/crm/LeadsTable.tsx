@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Download, Search } from 'lucide-react';
+import { Download, Loader2, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,8 +18,11 @@ import {
   PlatformBadge,
 } from '@/components/common';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useLeadsRoger, type LeadRoger } from '@/hooks/useLeadsRoger';
+import { formatPhoneBR } from '@/components/chat/utils';
 import { StatusInlineSelect } from './StatusInlineSelect';
-import { MOCK_LEADS, type LeadMock, type StatusLead } from './mockLeads';
+import type { StatusLead } from './mockLeads';
 
 type CategoryFilter = 'all' | 'sem-classificacao' | 'qualificado' | 'desqualificado';
 type StatusFilter = 'all' | StatusLead;
@@ -27,6 +31,7 @@ type TipoFilter = 'all' | 'lote' | 'cota';
 const fmtDateTime = (iso: string | null) => {
   if (!iso) return '—';
   const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
   return d.toLocaleString('pt-BR', {
     day: '2-digit',
     month: '2-digit',
@@ -36,28 +41,56 @@ const fmtDateTime = (iso: string | null) => {
   });
 };
 
-const fmtMoney = (n: number) =>
-  n === 0
-    ? '—'
-    : new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL',
-        maximumFractionDigits: 0,
-      }).format(n);
+const fmtMoney = (n: number | null | undefined) => {
+  const v = typeof n === 'number' ? n : parseFloat(String(n ?? 0));
+  if (!v || Number.isNaN(v)) return '—';
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    maximumFractionDigits: 0,
+  }).format(v);
+};
+
+const isValidStatus = (s: string | null | undefined): s is StatusLead =>
+  s === 'novo' || s === 'conversando' || s === 'convertido';
 
 export function LeadsTable() {
-  const [leads, setLeads] = useState<LeadMock[]>(MOCK_LEADS);
+  const { leads, isLoading } = useLeadsRoger();
+  const queryClient = useQueryClient();
+
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState<CategoryFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [tipoFilter, setTipoFilter] = useState<TipoFilter>('all');
+
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: StatusLead }) => {
+      const { error } = await supabase
+        .from('leads_roger')
+        .update({ status_lead: status })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leads-roger'] });
+      toast.success('Status atualizado');
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+      toast.error('Erro ao atualizar status', { description: msg });
+    },
+  });
 
   const total = leads.length;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return leads.filter((l) => {
-      if (q && !l.nome.toLowerCase().includes(q) && !l.telefone.includes(q)) return false;
+      if (q) {
+        const nome = (l.nome_lead || '').toLowerCase();
+        const tel = String(l.telefone || '');
+        if (!nome.includes(q) && !tel.includes(q)) return false;
+      }
       if (catFilter !== 'all' && classifyCategoria(l.categoria_lead) !== catFilter) return false;
       if (statusFilter !== 'all' && l.status_lead !== statusFilter) return false;
       if (tipoFilter !== 'all' && l.tipo_caso !== tipoFilter) return false;
@@ -66,28 +99,6 @@ export function LeadsTable() {
   }, [leads, search, catFilter, statusFilter, tipoFilter]);
 
   const showConversionColumn = statusFilter === 'all' || statusFilter === 'convertido';
-
-  const handleStatusChange = (id: string, next: StatusLead) => {
-    setLeads((arr) =>
-      arr.map((l) =>
-        l.id === id
-          ? {
-              ...l,
-              status_lead: next,
-              data_conversao:
-                next === 'convertido'
-                  ? (l.data_conversao ?? new Date().toISOString())
-                  : l.status_lead === 'convertido' && next !== 'convertido'
-                    ? null
-                    : l.data_conversao,
-            }
-          : l,
-      ),
-    );
-    toast.success('Status atualizado', {
-      description: 'Em breve esta mudança persistirá no banco (Fase B).',
-    });
-  };
 
   const handleExportCSV = () => {
     const cols = [
@@ -104,17 +115,17 @@ export function LeadsTable() {
       'Valor pago',
     ];
     const rows = filtered.map((l) => [
-      l.nome,
-      l.telefone,
-      l.estado,
+      l.nome_lead ?? '',
+      String(l.telefone ?? ''),
+      l.estado ?? '',
       l.campanha ?? '',
       l.codigo_criativo ?? '',
       l.categoria_lead ?? '',
-      l.status_lead,
-      l.tipo_caso,
+      l.status_lead ?? '',
+      l.tipo_caso ?? '',
       fmtDateTime(l.created_at),
       fmtDateTime(l.data_conversao),
-      l.valor_pago.toString(),
+      String(l.valor_pago ?? 0),
     ]);
     const csv = [cols, ...rows]
       .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','))
@@ -179,6 +190,7 @@ export function LeadsTable() {
         <p className="text-sm text-ink-secondary">
           Exibindo <span className="font-semibold text-ink">{filtered.length}</span> de{' '}
           <span className="font-semibold text-ink">{total}</span> leads
+          {isLoading && <Loader2 className="ml-2 inline h-3.5 w-3.5 animate-spin text-ink-muted" />}
         </p>
         <Button
           type="button"
@@ -186,6 +198,7 @@ export function LeadsTable() {
           size="sm"
           onClick={handleExportCSV}
           className="gap-2"
+          disabled={filtered.length === 0}
         >
           <Download className="h-4 w-4" />
           Exportar CSV
@@ -208,69 +221,85 @@ export function LeadsTable() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((l) => {
-              const { platform } = parseCampanha(l.campanha);
-              const group = classifyCategoria(l.categoria_lead);
-              return (
-                <tr
-                  key={l.id}
-                  className="border-b border-line-subtle hover:bg-app-bg cursor-pointer transition-colors"
-                  onClick={() => console.log('[RFN] open lead', l.id)}
-                >
-                  <td className="py-3 px-4">
-                    <div className="font-medium text-ink">{l.nome}</div>
-                    <div className="text-xs text-ink-muted">{l.telefone} · {l.estado}</div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <PlatformBadge platform={platform} />
-                  </td>
-                  <td className="py-3 px-4">
-                    <CategoryBadge group={group} />
-                  </td>
-                  <td className="py-3 px-4">
-                    <StatusInlineSelect
-                      value={l.status_lead}
-                      onChange={(next) => handleStatusChange(l.id, next)}
-                    />
-                  </td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={cn(
-                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                        l.tipo_caso === 'cota'
-                          ? 'bg-brand-light text-brand'
-                          : 'bg-tag-warning-bg text-tag-warning',
-                      )}
-                    >
-                      {l.tipo_caso === 'cota' ? 'Cota' : 'Lote'}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-ink-secondary">{fmtDateTime(l.created_at)}</td>
-                  {showConversionColumn && (
-                    <td className="py-3 px-4 text-ink-secondary">
-                      {fmtDateTime(l.data_conversao)}
-                    </td>
-                  )}
-                  <td className="py-3 px-4 text-right font-medium text-ink">
-                    {fmtMoney(l.valor_pago)}
-                  </td>
-                </tr>
-              );
-            })}
-            {filtered.length === 0 && (
+            {isLoading && leads.length === 0 ? (
               <tr>
-                <td
-                  colSpan={showConversionColumn ? 8 : 7}
-                  className="py-12 text-center text-ink-muted"
-                >
+                <td colSpan={showConversionColumn ? 8 : 7} className="py-12 text-center text-ink-muted">
+                  <Loader2 className="inline h-5 w-5 animate-spin" /> Carregando leads...
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={showConversionColumn ? 8 : 7} className="py-12 text-center text-ink-muted">
                   Nenhum lead encontrado com os filtros atuais.
                 </td>
               </tr>
+            ) : (
+              filtered.map((l) => renderRow(l, showConversionColumn, (id, status) => updateStatus.mutate({ id, status })))
             )}
           </tbody>
         </table>
       </div>
     </section>
+  );
+}
+
+function renderRow(
+  l: LeadRoger,
+  showConversionColumn: boolean,
+  onStatusChange: (id: string, next: StatusLead) => void,
+) {
+  const { platform } = parseCampanha(l.campanha);
+  const group = classifyCategoria(l.categoria_lead);
+  const currentStatus: StatusLead = isValidStatus(l.status_lead) ? l.status_lead : 'novo';
+
+  return (
+    <tr
+      key={l.id}
+      className="border-b border-line-subtle hover:bg-app-bg cursor-pointer transition-colors"
+      onClick={() => console.log('[RFN] open lead', l.id)}
+    >
+      <td className="py-3 px-4">
+        <div className="font-medium text-ink">{l.nome_lead || 'Sem nome'}</div>
+        <div className="text-xs text-ink-muted">
+          {formatPhoneBR(String(l.telefone))} {l.estado ? `· ${l.estado}` : ''}
+        </div>
+      </td>
+      <td className="py-3 px-4">
+        <PlatformBadge platform={platform} />
+      </td>
+      <td className="py-3 px-4">
+        <CategoryBadge group={group} />
+      </td>
+      <td className="py-3 px-4">
+        <StatusInlineSelect
+          value={currentStatus}
+          onChange={(next) => onStatusChange(l.id, next)}
+        />
+      </td>
+      <td className="py-3 px-4">
+        {l.tipo_caso ? (
+          <span
+            className={cn(
+              'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+              l.tipo_caso === 'cota'
+                ? 'bg-brand-light text-brand'
+                : l.tipo_caso === 'lote'
+                  ? 'bg-tag-warning-bg text-tag-warning'
+                  : 'bg-tag-neutral-bg text-tag-neutral',
+            )}
+          >
+            {l.tipo_caso}
+          </span>
+        ) : (
+          <span className="text-ink-muted text-xs">—</span>
+        )}
+      </td>
+      <td className="py-3 px-4 text-ink-secondary">{fmtDateTime(l.created_at)}</td>
+      {showConversionColumn && (
+        <td className="py-3 px-4 text-ink-secondary">{fmtDateTime(l.data_conversao)}</td>
+      )}
+      <td className="py-3 px-4 text-right font-medium text-ink">{fmtMoney(l.valor_pago)}</td>
+    </tr>
   );
 }
 
