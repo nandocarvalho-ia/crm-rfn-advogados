@@ -85,9 +85,9 @@ export function Topbar({ onOpenMobileSidebar }: TopbarProps) {
 
             <AvisoItem
               icon={<TrendingUp className="h-4 w-4 text-tag-success" />}
-              label="Conversões (7 dias)"
+              label="Conversões recentes"
               count={avisos?.conversoes ?? 0}
-              description="Leads convertidos na última semana"
+              description="Leads marcados como convertidos nos últimos 30 dias"
               onClick={() => navigate('/crm')}
             />
 

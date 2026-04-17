@@ -1,5 +1,14 @@
-import { useMemo, useState } from 'react';
-import { Calendar as CalendarIcon, Download, Loader2, Plus, Search, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Loader2,
+  Plus,
+  Search,
+  X,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -34,6 +43,8 @@ import type { StatusLead } from './mockLeads';
 type CategoryFilter = 'all' | 'sem-classificacao' | 'qualificado' | 'desqualificado';
 type StatusFilter = 'all' | StatusLead;
 type TipoFilter = 'all' | 'lote' | 'cota';
+
+const PAGE_SIZE = 50;
 
 const fmtDateTime = (iso: string | null) => {
   if (!iso) return '—';
@@ -75,6 +86,7 @@ export function LeadsTable() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [tipoFilter, setTipoFilter] = useState<TipoFilter>('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [page, setPage] = useState(1);
 
   const hasActiveFilters =
     search !== '' ||
@@ -112,6 +124,11 @@ export function LeadsTable() {
 
   const total = leads.length;
 
+  // Sempre que algum filtro muda, volta para a primeira página
+  useEffect(() => {
+    setPage(1);
+  }, [search, catFilter, statusFilter, tipoFilter, dateRange]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const fromMs = dateRange?.from ? new Date(dateRange.from).setHours(0, 0, 0, 0) : null;
@@ -141,6 +158,12 @@ export function LeadsTable() {
   }, [leads, search, catFilter, statusFilter, tipoFilter, dateRange]);
 
   const showConversionColumn = statusFilter === 'all' || statusFilter === 'convertido';
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const clampedPage = Math.min(page, pageCount);
+  const startIndex = (clampedPage - 1) * PAGE_SIZE;
+  const endIndex = Math.min(startIndex + PAGE_SIZE, filtered.length);
+  const pageRows = filtered.slice(startIndex, endIndex);
 
   const handleExportCSV = () => {
     const cols = [
@@ -329,7 +352,7 @@ export function LeadsTable() {
                 </td>
               </tr>
             ) : (
-              filtered.map((l) =>
+              pageRows.map((l) =>
                 renderRow(
                   l,
                   showConversionColumn,
@@ -341,6 +364,43 @@ export function LeadsTable() {
           </tbody>
         </table>
       </div>
+
+      {/* Paginação */}
+      {filtered.length > 0 && (
+        <div className="flex flex-col gap-2 px-4 py-3 border-t border-line-subtle md:flex-row md:items-center md:justify-between">
+          <p className="text-xs text-ink-muted">
+            Mostrando <span className="font-medium text-ink">{startIndex + 1}</span>–
+            <span className="font-medium text-ink">{endIndex}</span> de{' '}
+            <span className="font-medium text-ink">{filtered.length}</span>
+          </p>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={clampedPage === 1}
+              className="h-8 gap-1"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Anterior
+            </Button>
+            <span className="px-3 text-sm text-ink-secondary">
+              Página <span className="font-medium text-ink">{clampedPage}</span> de{' '}
+              <span className="font-medium text-ink">{pageCount}</span>
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+              disabled={clampedPage === pageCount}
+              className="h-8 gap-1"
+            >
+              Próxima
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <LeadDetailsModal lead={selectedLead} onClose={() => setSelectedLeadId(null)} />
       <NovoLeadModal open={novoLeadOpen} onClose={() => setNovoLeadOpen(false)} />
