@@ -45,17 +45,15 @@ export function computeKPIs(
   const convRatePrev =
     qualifiedPrev.length > 0 ? (convertedPrev.length / qualifiedPrev.length) * 100 : 0;
 
-  // Potencial de recuperação = valor_pago de qualificados ∪ proposta_enviada ∪
-  // convertidos criados no período (proposta_enviada já é uma etapa avançada).
-  const isRecoverable = (l: DashboardLead) =>
-    isQualificado(l) ||
-    l.status_lead === 'proposta_enviada' ||
-    l.status_lead === 'convertido';
+  // Potencial de recuperação = SUM(valor_pago) APENAS de leads com
+  // status_lead='convertido' criados no período. proposta_enviada e
+  // qualificados sem conversão NÃO entram (decisão de negócio: só
+  // contabilizar quando o contrato foi efetivamente fechado).
   const potencialCur = createdCur
-    .filter(isRecoverable)
+    .filter((l) => l.status_lead === 'convertido')
     .reduce((s, l) => s + toNumber(l.valor_pago), 0);
   const potencialPrev = createdPrev
-    .filter(isRecoverable)
+    .filter((l) => l.status_lead === 'convertido')
     .reduce((s, l) => s + toNumber(l.valor_pago), 0);
 
   return {

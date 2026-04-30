@@ -34,7 +34,7 @@ export function KPISection({ kpis }: { kpis: KPISet }) {
         value={fmtMoney(kpis.recoveredPotential)}
         icon={DollarSign}
         deltaPct={kpis.deltas.potential}
-        footnote="qualificados ∪ convertidos no período"
+        footnote="valor_pago dos convertidos no período"
       />
     </div>
   );
