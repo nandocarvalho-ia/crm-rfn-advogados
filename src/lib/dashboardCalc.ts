@@ -45,9 +45,12 @@ export function computeKPIs(
   const convRatePrev =
     qualifiedPrev.length > 0 ? (convertedPrev.length / qualifiedPrev.length) * 100 : 0;
 
-  // Potencial de recuperação = valor_pago de qualificados ∪ convertidos criados no período.
+  // Potencial de recuperação = valor_pago de qualificados ∪ proposta_enviada ∪
+  // convertidos criados no período (proposta_enviada já é uma etapa avançada).
   const isRecoverable = (l: DashboardLead) =>
-    isQualificado(l) || l.status_lead === 'convertido';
+    isQualificado(l) ||
+    l.status_lead === 'proposta_enviada' ||
+    l.status_lead === 'convertido';
   const potencialCur = createdCur
     .filter(isRecoverable)
     .reduce((s, l) => s + toNumber(l.valor_pago), 0);
@@ -172,7 +175,10 @@ export function computeLoteCota(leads: DashboardLead[], converted: DashboardLead
 // ----- Funil -----
 export function computeFunil(leads: DashboardLead[], converted: DashboardLead[]): FunilEtapa[] {
   const qualificados = leads.filter(isQualificado);
+  // "Em proposta" = qualificados cujo status_lead='proposta_enviada' OU
+  // etapa_atual contém 'proposta' (cobre o sinal antigo).
   const emProposta = qualificados.filter((l) => {
+    if (l.status_lead === 'proposta_enviada') return true;
     const e = (l.etapa_atual ?? '').toLowerCase();
     return e.includes('proposta');
   });
