@@ -70,7 +70,7 @@ const fmtMoney = (n: number | null | undefined) => {
 };
 
 const isValidStatus = (s: string | null | undefined): s is StatusLead =>
-  s === 'novo' || s === 'conversando' || s === 'convertido';
+  s === 'novo' || s === 'conversando' || s === 'proposta_enviada' || s === 'convertido';
 
 export function LeadsTable() {
   const { leads, isLoading } = useLeadsRoger();
@@ -236,6 +236,7 @@ export function LeadsTable() {
             <SelectItem value="all">Todos os status</SelectItem>
             <SelectItem value="novo">Novo</SelectItem>
             <SelectItem value="conversando">Conversando</SelectItem>
+            <SelectItem value="proposta_enviada">Proposta Enviada</SelectItem>
             <SelectItem value="convertido">Convertido</SelectItem>
           </SelectContent>
         </Select>

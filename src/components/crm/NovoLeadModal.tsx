@@ -33,7 +33,12 @@ const CATEGORIAS = [
   'DESQUALIFICADO',
 ] as const;
 
-const STATUS_OPCOES = ['novo', 'conversando', 'convertido'] as const;
+const STATUS_OPCOES = [
+  { value: 'novo', label: 'Novo' },
+  { value: 'conversando', label: 'Conversando' },
+  { value: 'proposta_enviada', label: 'Proposta Enviada' },
+  { value: 'convertido', label: 'Convertido' },
+] as const;
 const TIPO_CASO = ['lote', 'cota'] as const;
 
 const UFS = [
@@ -288,7 +293,7 @@ export function NovoLeadModal({ open, onClose }: NovoLeadModalProps) {
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {STATUS_OPCOES.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

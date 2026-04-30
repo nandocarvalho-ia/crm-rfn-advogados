@@ -1,6 +1,12 @@
 import { cn } from '@/lib/utils';
 
-export type LeadStatus = 'novo' | 'conversando' | 'convertido' | null | undefined;
+export type LeadStatus =
+  | 'novo'
+  | 'conversando'
+  | 'proposta_enviada'
+  | 'convertido'
+  | null
+  | undefined;
 
 interface StatusBadgeProps {
   status: LeadStatus;
@@ -15,6 +21,10 @@ const STATUS_MAP: Record<string, { label: string; cls: string }> = {
   conversando: {
     label: 'Conversando',
     cls: 'bg-tag-warning-bg text-tag-warning',
+  },
+  proposta_enviada: {
+    label: 'Proposta Enviada',
+    cls: 'bg-tag-orange-bg text-tag-orange',
   },
   convertido: {
     label: 'Convertido',

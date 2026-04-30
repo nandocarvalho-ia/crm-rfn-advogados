@@ -108,6 +108,8 @@ export default {
           "success-bg": "hsl(var(--tag-success-bg))",
           warning: "hsl(var(--tag-warning))",
           "warning-bg": "hsl(var(--tag-warning-bg))",
+          orange: "hsl(var(--tag-orange))",
+          "orange-bg": "hsl(var(--tag-orange-bg))",
           info: "hsl(var(--tag-info))",
           "info-bg": "hsl(var(--tag-info-bg))",
           danger: "hsl(var(--tag-danger))",

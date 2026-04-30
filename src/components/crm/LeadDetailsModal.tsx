@@ -58,7 +58,12 @@ const CATEGORIAS = [
   'DESQUALIFICADO',
 ] as const;
 
-const STATUS = ['novo', 'conversando', 'convertido'] as const;
+const STATUS = [
+  { value: 'novo', label: 'Novo' },
+  { value: 'conversando', label: 'Conversando' },
+  { value: 'proposta_enviada', label: 'Proposta Enviada' },
+  { value: 'convertido', label: 'Convertido' },
+] as const;
 const TIPO_CASO = ['lote', 'cota'] as const;
 
 const UFS = [
@@ -365,7 +370,7 @@ export function LeadDetailsModal({ lead, onClose }: LeadDetailsModalProps) {
                     <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                     <SelectContent>
                       {STATUS.map((s) => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

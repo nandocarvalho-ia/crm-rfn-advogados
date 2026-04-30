@@ -1,1 +1,1 @@
-export type StatusLead = 'novo' | 'conversando' | 'convertido';
+export type StatusLead = 'novo' | 'conversando' | 'proposta_enviada' | 'convertido';

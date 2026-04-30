@@ -113,6 +113,8 @@ All colors MUST be HSL.
     --tag-success-bg: 141 84% 93%;
     --tag-warning: 32 95% 44%;
     --tag-warning-bg: 48 97% 88%;
+    --tag-orange: 21 90% 48%;            /* #EA580C — Proposta enviada */
+    --tag-orange-bg: 32 100% 92%;        /* #FFEDD5 */
     --tag-info: 201 98% 39%;
     --tag-info-bg: 204 94% 94%;
     --tag-danger: 0 72% 51%;

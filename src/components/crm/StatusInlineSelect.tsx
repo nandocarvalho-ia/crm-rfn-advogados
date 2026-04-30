@@ -13,7 +13,7 @@ interface StatusInlineSelectProps {
   onChange: (next: StatusLead) => void;
 }
 
-const OPTIONS: StatusLead[] = ['novo', 'conversando', 'convertido'];
+const OPTIONS: StatusLead[] = ['novo', 'conversando', 'proposta_enviada', 'convertido'];
 
 export function StatusInlineSelect({ value, onChange }: StatusInlineSelectProps) {
   return (
