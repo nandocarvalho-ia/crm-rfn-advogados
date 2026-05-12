@@ -47,6 +47,7 @@ import { useIABlockControl } from '@/hooks/useIABlockControl';
 import { formatPhoneBR } from '@/components/chat/utils';
 import type { LeadRoger } from '@/hooks/useLeadsRoger';
 import { cn } from '@/lib/utils';
+import { extractErrorMessage } from '@/lib/errors';
 import { ObservacoesList } from './ObservacoesList';
 
 const CATEGORIAS = [
@@ -182,8 +183,7 @@ export function LeadDetailsModal({ lead, onClose }: LeadDetailsModalProps) {
       toast.success('Lead atualizado');
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : 'Erro desconhecido';
-      toast.error('Erro ao salvar', { description: msg });
+      toast.error('Erro ao salvar', { description: extractErrorMessage(err) });
     },
   });
 
@@ -206,8 +206,7 @@ export function LeadDetailsModal({ lead, onClose }: LeadDetailsModalProps) {
       toast.success('Observação adicionada');
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : 'Erro desconhecido';
-      toast.error('Erro ao adicionar observação', { description: msg });
+      toast.error('Erro ao adicionar observação', { description: extractErrorMessage(err) });
     },
   });
 
@@ -227,8 +226,7 @@ export function LeadDetailsModal({ lead, onClose }: LeadDetailsModalProps) {
       onClose();
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : 'Erro desconhecido';
-      toast.error('Erro ao excluir', { description: msg });
+      toast.error('Erro ao excluir', { description: extractErrorMessage(err) });
     },
   });
 
