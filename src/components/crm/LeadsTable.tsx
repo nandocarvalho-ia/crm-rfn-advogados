@@ -35,6 +35,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useLeadsRoger, type LeadRoger } from '@/hooks/useLeadsRoger';
 import { formatPhoneBR } from '@/components/chat/utils';
+import { extractErrorMessage } from '@/lib/errors';
 import { StatusInlineSelect } from './StatusInlineSelect';
 import { LeadDetailsModal } from './LeadDetailsModal';
 import { NovoLeadModal } from './NovoLeadModal';
@@ -117,8 +118,7 @@ export function LeadsTable() {
       toast.success('Status atualizado');
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : 'Erro desconhecido';
-      toast.error('Erro ao atualizar status', { description: msg });
+      toast.error('Erro ao atualizar status', { description: extractErrorMessage(err) });
     },
   });
 

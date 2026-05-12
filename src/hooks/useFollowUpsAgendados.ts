@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { extractErrorMessage } from '@/lib/errors';
 
 export interface FollowUpLead {
   id: string;
@@ -70,8 +71,7 @@ export function useUpdateFollowUpTexts() {
       toast.success('Textos atualizados');
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : 'Erro desconhecido';
-      toast.error('Erro ao salvar textos', { description: msg });
+      toast.error('Erro ao salvar textos', { description: extractErrorMessage(err) });
     },
   });
 }

@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { getEstadoFromTelefone } from '@/lib/utils';
+import { extractErrorMessage } from '@/lib/errors';
 
 const CATEGORIAS = [
   'NÃO CLASSIFICADO',
@@ -196,8 +197,7 @@ export function NovoLeadModal({ open, onClose }: NovoLeadModalProps) {
       onClose();
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : 'Erro desconhecido';
-      toast.error('Erro ao criar lead', { description: msg });
+      toast.error('Erro ao criar lead', { description: extractErrorMessage(err) });
     },
   });
 
