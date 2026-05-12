@@ -44,6 +44,14 @@ import type { StatusLead } from './types';
 type CategoryFilter = 'all' | 'sem-classificacao' | 'qualificado' | 'desqualificado';
 type StatusFilter = 'all' | StatusLead;
 type TipoFilter = 'all' | 'lote' | 'cota';
+type OrigemFilter =
+  | 'all'
+  | 'meta_cota'
+  | 'meta_lote'
+  | 'google_cota'
+  | 'google_lote'
+  | 'organico'
+  | 'sem_origem';
 
 const PAGE_SIZE = 50;
 
@@ -86,6 +94,7 @@ export function LeadsTable() {
   const [catFilter, setCatFilter] = useState<CategoryFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [tipoFilter, setTipoFilter] = useState<TipoFilter>('all');
+  const [origemFilter, setOrigemFilter] = useState<OrigemFilter>('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [page, setPage] = useState(1);
 
@@ -94,6 +103,7 @@ export function LeadsTable() {
     catFilter !== 'all' ||
     statusFilter !== 'all' ||
     tipoFilter !== 'all' ||
+    origemFilter !== 'all' ||
     !!dateRange?.from ||
     !!dateRange?.to;
 
@@ -102,6 +112,7 @@ export function LeadsTable() {
     setCatFilter('all');
     setStatusFilter('all');
     setTipoFilter('all');
+    setOrigemFilter('all');
     setDateRange(undefined);
   };
 
@@ -127,7 +138,7 @@ export function LeadsTable() {
   // Sempre que algum filtro muda, volta para a primeira página
   useEffect(() => {
     setPage(1);
-  }, [search, catFilter, statusFilter, tipoFilter, dateRange]);
+  }, [search, catFilter, statusFilter, tipoFilter, origemFilter, dateRange]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -147,6 +158,13 @@ export function LeadsTable() {
       if (catFilter !== 'all' && classifyCategoria(l.categoria_lead) !== catFilter) return false;
       if (statusFilter !== 'all' && l.status_lead !== statusFilter) return false;
       if (tipoFilter !== 'all' && l.tipo_caso !== tipoFilter) return false;
+      if (origemFilter !== 'all') {
+        if (origemFilter === 'sem_origem') {
+          if (l.campanha != null && l.campanha !== '') return false;
+        } else if (l.campanha !== origemFilter) {
+          return false;
+        }
+      }
 
       if (fromMs !== null && toMs !== null && l.created_at) {
         const createdMs = new Date(l.created_at).getTime();
@@ -155,7 +173,7 @@ export function LeadsTable() {
 
       return true;
     });
-  }, [leads, search, catFilter, statusFilter, tipoFilter, dateRange]);
+  }, [leads, search, catFilter, statusFilter, tipoFilter, origemFilter, dateRange]);
 
   const showConversionColumn = statusFilter === 'all' || statusFilter === 'convertido';
 
@@ -247,6 +265,19 @@ export function LeadsTable() {
             <SelectItem value="all">Todos os tipos</SelectItem>
             <SelectItem value="lote">Lote</SelectItem>
             <SelectItem value="cota">Cota</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={origemFilter} onValueChange={(v) => setOrigemFilter(v as OrigemFilter)}>
+          <SelectTrigger className="w-[170px] h-10"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas as origens</SelectItem>
+            <SelectItem value="meta_cota">Meta · Cota</SelectItem>
+            <SelectItem value="meta_lote">Meta · Lote</SelectItem>
+            <SelectItem value="google_cota">Google · Cota</SelectItem>
+            <SelectItem value="google_lote">Google · Lote</SelectItem>
+            <SelectItem value="organico">Orgânico</SelectItem>
+            <SelectItem value="sem_origem">Sem origem</SelectItem>
           </SelectContent>
         </Select>
 
